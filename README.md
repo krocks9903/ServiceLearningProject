@@ -2,7 +2,7 @@
 
 A volunteer management application designed to streamline recruitment, scheduling, communication, and reporting for organizations of all sizes.  
 
-## 🚀 Features
+##  Features
 
 - **Volunteer Database & Profiles**  
   Store detailed volunteer records, including contact data, emergency contacts, references, photos, and custom fields (skills, t-shirt sizes, etc.).
@@ -45,7 +45,7 @@ A volunteer management application designed to streamline recruitment, schedulin
 
 ---
 
-## 📊 Feature Summary
+##  Feature Summary
 
 | Category             | Key Functionality |
 |----------------------|-------------------|
@@ -64,7 +64,7 @@ A volunteer management application designed to streamline recruitment, schedulin
 
 ---
 
-## 📂 Roadmap (Planned / Optional)
+##  Roadmap (Planned / Optional)
 
 - Group scheduling with tracking for individuals and groups  
 - Bulk import of volunteers via CSV/Excel  
@@ -74,7 +74,7 @@ A volunteer management application designed to streamline recruitment, schedulin
 
 ---
 
-## 🛠️ Tech & Security
+##  Tech & Security
 
 - Banking-level security  
 - Duplicate record alerts & merging  
