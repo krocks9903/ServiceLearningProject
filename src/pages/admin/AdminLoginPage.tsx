@@ -1,14 +1,22 @@
-import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { supabase } from "../services/supabaseClient"
-import { theme } from "../theme"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "../../services/supabaseClient"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
+import { theme } from "../../theme"
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const { user, isAdmin } = useAdminAuth()
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      navigate("/admin/dashboard")
+    }
+  }, [user, isAdmin, navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,26 +36,22 @@ export default function LoginPage() {
       }
 
       if (data.user) {
-        // Check if user is admin and redirect accordingly
+        // Check if user is admin
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
 
-        if (profileError) {
-          console.error("Error fetching profile:", profileError)
-          // Default to dashboard if profile fetch fails
-          navigate("/dashboard")
+        if (profileError || profile?.role !== 'admin') {
+          await supabase.auth.signOut()
+          setError("Access denied. Admin privileges required.")
+          setLoading(false)
           return
         }
 
-        // Redirect based on role
-        if (profile?.role === 'admin') {
-          navigate("/admin/dashboard")
-        } else {
-          navigate("/dashboard")
-        }
+        // Redirect to admin dashboard
+        navigate("/admin/dashboard")
       }
     } catch (error) {
       setError("An unexpected error occurred")
@@ -63,7 +67,7 @@ export default function LoginPage() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, rgba(248, 249, 250, 0.85) 0%, rgba(233, 236, 239, 0.85) 100%), url('https://harrychapinfoodbank.org/wp-content/uploads/2020/11/152-edit-560x420.jpg') center/cover",
+      background: "linear-gradient(135deg, #1D3557 0%, #2C3E50 100%)",
       fontFamily: theme.typography.fontFamily,
     } as React.CSSProperties,
     loginCard: {
@@ -117,7 +121,7 @@ export default function LoginPage() {
       fontFamily: theme.typography.fontFamily,
     } as React.CSSProperties,
     button: {
-      backgroundColor: theme.colors.primary,
+      backgroundColor: theme.colors.secondary,
       color: theme.colors.white,
       border: "none",
       padding: "0.875rem",
@@ -158,9 +162,9 @@ export default function LoginPage() {
     <div style={styles.container}>
       <div style={styles.loginCard}>
         <div style={styles.header}>
-          <div style={styles.logo}>🍽</div>
-          <h1 style={styles.title}>Welcome Back</h1>
-          <p style={styles.subtitle}>Harry Chapin Food Bank of SWFL Volunteer Portal</p>
+          <div style={styles.logo}>🔐</div>
+          <h1 style={styles.title}>Admin Portal</h1>
+          <p style={styles.subtitle}>Harry Chapin Food Bank of SWFL</p>
         </div>
 
         <form onSubmit={handleLogin} style={styles.form}>
@@ -179,7 +183,7 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               style={styles.input}
               required
-              placeholder="your@email.com"
+              placeholder="admin@harrychapinfoodbank.org"
             />
           </div>
 
@@ -204,27 +208,26 @@ export default function LoginPage() {
             }}
             onMouseEnter={(e) => {
               if (!loading) {
-                e.currentTarget.style.backgroundColor = '#c72e3a'
+                e.currentTarget.style.backgroundColor = '#2C3E50'
                 e.currentTarget.style.transform = 'translateY(-2px)'
               }
             }}
             onMouseLeave={(e) => {
               if (!loading) {
-                e.currentTarget.style.backgroundColor = theme.colors.primary
+                e.currentTarget.style.backgroundColor = theme.colors.secondary
                 e.currentTarget.style.transform = 'translateY(0)'
               }
             }}
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {loading ? "Signing In..." : "Sign In to Admin Portal"}
           </button>
         </form>
 
         <div style={styles.footer}>
           <p>
-            Don't have an account?{" "}
-            <Link to="/signup" style={styles.link}>
-              Sign up here
-            </Link>
+            <a href="/" style={styles.link}>
+              ← Back to Volunteer Portal
+            </a>
           </p>
         </div>
       </div>
