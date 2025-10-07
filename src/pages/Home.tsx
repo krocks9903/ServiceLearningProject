@@ -9,7 +9,7 @@ export default function Home() {
   const heroImage = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
   const childrenImage = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80"
   const familiesImage = "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=800&q=80"
-  const seniorsImage = "https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=800&q=80"
+  const seniorsImage = "https://tse4.mm.bing.net/th/id/OIP.VOcD0nIerwujE0BWYOhLWwHaEO?pid=Api&P=0&h=220"
 
   const styles = {
     container: {
@@ -337,6 +337,199 @@ export default function Home() {
 
         {/* Volunteer Information Section */}
         <div style={{ marginTop: "4rem" }}>
+          <h2 style={styles.sectionTitle}>Volunteer Information & Resources</h2>
+          
+          {/* Volunteer Portal Information */}
+          <div style={{
+            backgroundColor: theme.colors.white,
+            padding: "2.5rem",
+            borderRadius: theme.borderRadius.lg,
+            boxShadow: theme.shadows.lg,
+            marginBottom: "3rem",
+            border: `2px solid ${theme.colors.secondary[300]}`,
+            position: "relative"
+          }}>
+            <div style={{
+              position: "absolute",
+              top: "-15px",
+              left: "2rem",
+              backgroundColor: theme.colors.secondary,
+              color: theme.colors.white,
+              padding: "0.75rem 1.5rem",
+              borderRadius: theme.borderRadius.md,
+              fontSize: "1rem",
+              fontWeight: "bold",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              Volunteer Portal
+            </div>
+            <div style={{ marginTop: "1.5rem" }}>
+              <h3 style={{ 
+                fontSize: "1.5rem", 
+                fontWeight: "bold", 
+                color: theme.colors.secondary, 
+                marginBottom: "1rem"
+              }}>
+                Welcome to the Volunteer Portal
+              </h3>
+              <p style={{ 
+                color: theme.colors.text.secondary, 
+                lineHeight: "1.7", 
+                marginBottom: "1.5rem",
+                fontSize: "1.1rem",
+                fontFamily: "'Georgia', 'Times New Roman', serif"
+              }}>
+                This online feature gives you an easy way to keep-in-touch with the volunteer program. You can schedule yourself, check your schedule, post your volunteer service, receive messages, and much more: anytime, and from any device.
+              </p>
+              <div style={{
+                backgroundColor: theme.colors.info[50],
+                padding: "1.5rem",
+                borderRadius: theme.borderRadius.md,
+                border: `1px solid ${theme.colors.info[200]}`
+              }}>
+                <p style={{ 
+                  fontSize: "1.1rem", 
+                  color: theme.colors.info[800], 
+                  margin: 0,
+                  fontWeight: "500",
+                  fontStyle: "italic"
+                }}>
+                  Watch this space for the latest volunteer news!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Volunteer Resources Grid */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+            gap: "2rem",
+            marginBottom: "3rem"
+          }}>
+            {/* Volunteer Handbook */}
+            <div style={{
+              backgroundColor: theme.colors.white,
+              padding: "2rem",
+              borderRadius: theme.borderRadius.lg,
+              boxShadow: theme.shadows.md,
+              border: `2px solid ${theme.colors.primary[300]}`,
+              position: "relative"
+            }}>
+              <div style={{
+                position: "absolute",
+                top: "-12px",
+                left: "1.5rem",
+                backgroundColor: theme.colors.primary,
+                color: theme.colors.white,
+                padding: "0.5rem 1rem",
+                borderRadius: theme.borderRadius.md,
+                fontSize: "0.875rem",
+                fontWeight: "bold"
+              }}>
+                Volunteer Handbook 2025
+              </div>
+              <div style={{ marginTop: "1.5rem" }}>
+                <h3 style={{ 
+                  fontSize: "1.25rem", 
+                  fontWeight: "bold", 
+                  color: theme.colors.primary, 
+                  marginBottom: "1rem"
+                }}>
+                  Essential Volunteer Guide
+                </h3>
+                <p style={{ 
+                  color: theme.colors.text.secondary, 
+                  lineHeight: "1.6", 
+                  marginBottom: "1.5rem",
+                  fontSize: "1rem",
+                  fontFamily: "'Georgia', 'Times New Roman', serif"
+                }}>
+                  If you are a new volunteer or have not been through our Orientation, please review this document for more information. The Volunteer Handbook is your extensive guide to volunteering at HCFB!
+                </p>
+                <a 
+                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D45772T5814847222R82362.PDF&MN=2022115790"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    color: theme.colors.white,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: theme.borderRadius.md,
+                    textDecoration: "none",
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    display: "inline-block",
+                    transition: "background-color 0.2s ease"
+                  }}
+                >
+                  Download Volunteer Handbook
+                </a>
+              </div>
+            </div>
+
+            {/* Fulfill Mobile Pantry Operations Manual */}
+            <div style={{
+              backgroundColor: theme.colors.white,
+              padding: "2rem",
+              borderRadius: theme.borderRadius.lg,
+              boxShadow: theme.shadows.md,
+              border: `2px solid ${theme.colors.secondary[300]}`,
+              position: "relative"
+            }}>
+              <div style={{
+                position: "absolute",
+                top: "-12px",
+                left: "1.5rem",
+                backgroundColor: theme.colors.secondary,
+                color: theme.colors.white,
+                padding: "0.5rem 1rem",
+                borderRadius: theme.borderRadius.md,
+                fontSize: "0.875rem",
+                fontWeight: "bold"
+              }}>
+                Fulfill Mobile Pantry Manual
+              </div>
+              <div style={{ marginTop: "1.5rem" }}>
+                <h3 style={{ 
+                  fontSize: "1.25rem", 
+                  fontWeight: "bold", 
+                  color: theme.colors.secondary, 
+                  marginBottom: "1rem"
+                }}>
+                  Mobile Pantry Operations
+                </h3>
+                <p style={{ 
+                  color: theme.colors.text.secondary, 
+                  lineHeight: "1.6", 
+                  marginBottom: "1.5rem",
+                  fontSize: "1rem",
+                  fontFamily: "'Georgia', 'Times New Roman', serif"
+                }}>
+                  Here is the Operations Manual for our Fulfill Mobile Pantries (FMP). Volunteers that attend FMP should review this manual for complete operating guidelines and procedures.
+                </p>
+                <a 
+                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D44263T3834518287R8589.PDF&MN=2009227680"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: theme.colors.secondary,
+                    color: theme.colors.white,
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: theme.borderRadius.md,
+                    textDecoration: "none",
+                    fontSize: "0.9rem",
+                    fontWeight: "600",
+                    display: "inline-block",
+                    transition: "background-color 0.2s ease"
+                  }}
+                >
+                  Download FMP Manual
+                </a>
+              </div>
+            </div>
+          </div>
+
           <h2 style={styles.sectionTitle}>Volunteer Opportunities</h2>
           
           {/* Hero Volunteer Section */}
@@ -436,7 +629,7 @@ export default function Home() {
                     color: theme.colors.text.primary,
                     marginBottom: "0.75rem"
                   }}>
-                    Monday - Friday
+                    Monday-Thursday
                   </p>
                   <div style={{ 
                     fontSize: "1.15rem", 
@@ -445,10 +638,29 @@ export default function Home() {
                     fontFamily: "'Georgia', 'Times New Roman', serif"
                   }}>
                     <p style={{ margin: "0.5rem 0" }}>
-                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 – 11:30 a.m.</strong>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am</strong>
                     </p>
                     <p style={{ margin: "0.5rem 0" }}>
-                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>Noon – 3 p.m.</strong>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>12 pm - 3 pm</strong>
+                    </p>
+                  </div>
+                  <p style={{ 
+                    fontSize: "1.25rem", 
+                    fontWeight: "bold", 
+                    color: theme.colors.text.primary,
+                    marginBottom: "0.75rem",
+                    marginTop: "1rem"
+                  }}>
+                    Fridays
+                  </p>
+                  <div style={{ 
+                    fontSize: "1.15rem", 
+                    color: theme.colors.text.secondary, 
+                    lineHeight: "1.6",
+                    fontFamily: "'Georgia', 'Times New Roman', serif"
+                  }}>
+                    <p style={{ margin: "0.5rem 0" }}>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am only</strong>
                     </p>
                   </div>
                   <div style={{ 
@@ -526,7 +738,7 @@ export default function Home() {
                     color: theme.colors.text.primary,
                     marginBottom: "0.75rem"
                   }}>
-                    Mon, Tue, Thu, Fri
+                    Tuesday-Thursday
                   </p>
                   <div style={{ 
                     fontSize: "1.15rem", 
@@ -535,10 +747,29 @@ export default function Home() {
                     fontFamily: "'Georgia', 'Times New Roman', serif"
                   }}>
                     <p style={{ margin: "0.5rem 0" }}>
-                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8 – 10:30 a.m.</strong>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am</strong>
                     </p>
                     <p style={{ margin: "0.5rem 0" }}>
-                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>Noon – 2:30 p.m.</strong>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>12 pm - 3 pm</strong>
+                    </p>
+                  </div>
+                  <p style={{ 
+                    fontSize: "1.25rem", 
+                    fontWeight: "bold", 
+                    color: theme.colors.text.primary,
+                    marginBottom: "0.75rem",
+                    marginTop: "1rem"
+                  }}>
+                    Fridays
+                  </p>
+                  <div style={{ 
+                    fontSize: "1.15rem", 
+                    color: theme.colors.text.secondary, 
+                    lineHeight: "1.6",
+                    fontFamily: "'Georgia', 'Times New Roman', serif"
+                  }}>
+                    <p style={{ margin: "0.5rem 0" }}>
+                      <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am only</strong>
                     </p>
                   </div>
                   <div style={{ 
@@ -562,136 +793,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Volunteer Requirements */}
-          <div style={{ 
-            backgroundColor: "#ffffff", 
-            padding: "2.5rem", 
-            borderRadius: theme.borderRadius.lg, 
-            marginTop: "3rem", 
-            border: `2px solid ${theme.colors.warning[300]}`,
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            position: "relative"
-          }}>
-            <div style={{
-              position: "absolute",
-              top: "-15px",
-              left: "2rem",
-              backgroundColor: "#dc2626",
-              color: "#ffffff",
-              padding: "0.75rem 1.5rem",
-              borderRadius: theme.borderRadius.md,
-              fontSize: "1rem",
-              fontWeight: "bold",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-            }}>
-              Important Requirements
-            </div>
-            <div style={{ marginTop: "1.5rem" }}>
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
-                gap: "1.5rem",
-                marginTop: "1rem"
-              }}>
-                <div style={{ 
-                  backgroundColor: theme.colors.white, 
-                  padding: "1.25rem", 
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.warning[200]}`
-                }}>
-                  <p style={{ 
-                    fontSize: "1.25rem", 
-                    fontWeight: "bold", 
-                    color: theme.colors.warning[800],
-                    marginBottom: "0.75rem"
-                  }}>
-                    Scheduling
-                  </p>
-                  <p style={{ 
-                    color: theme.colors.text.secondary, 
-                    margin: 0, 
-                    fontSize: "1.15rem",
-                    fontFamily: "'Georgia', 'Times New Roman', serif"
-                  }}>
-                    <strong style={{ fontWeight: "600", color: theme.colors.primary }}>All volunteering must be scheduled in advance</strong>
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: theme.colors.white, 
-                  padding: "1.25rem", 
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.warning[200]}`
-                }}>
-                  <p style={{ 
-                    fontSize: "1.25rem", 
-                    fontWeight: "bold", 
-                    color: theme.colors.warning[800],
-                    marginBottom: "0.75rem"
-                  }}>
-                    Dress Code
-                  </p>
-                  <p style={{ 
-                    color: theme.colors.text.secondary, 
-                    margin: 0, 
-                    fontSize: "1.15rem",
-                    fontFamily: "'Georgia', 'Times New Roman', serif"
-                  }}>
-                    <strong style={{ fontWeight: "600", color: theme.colors.primary }}>Closed-toe shoes required</strong>
-                  </p>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: theme.colors.white, 
-                  padding: "1.25rem", 
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.warning[200]}`
-                }}>
-                  <p style={{ 
-                    fontSize: "1.25rem", 
-                    fontWeight: "bold", 
-                    color: theme.colors.warning[800],
-                    marginBottom: "0.75rem"
-                  }}>
-                    Age Requirements
-                  </p>
-                  <div style={{ 
-                    color: theme.colors.text.secondary, 
-                    fontSize: "1.15rem", 
-                    lineHeight: "1.5",
-                    fontFamily: "'Georgia', 'Times New Roman', serif"
-                  }}>
-                    <p style={{ margin: "0.25rem 0" }}><strong style={{ fontWeight: "600", color: theme.colors.primary }}>Weekdays:</strong> 16+ years</p>
-                    <p style={{ margin: "0.25rem 0" }}><strong style={{ fontWeight: "600", color: theme.colors.primary }}>Weekends:</strong> 14+ (with adult)</p>
-                  </div>
-                </div>
-                
-                <div style={{ 
-                  backgroundColor: theme.colors.white, 
-                  padding: "1.25rem", 
-                  borderRadius: theme.borderRadius.md,
-                  border: `1px solid ${theme.colors.warning[200]}`
-                }}>
-                  <p style={{ 
-                    fontSize: "1.25rem", 
-                    fontWeight: "bold", 
-                    color: theme.colors.warning[800],
-                    marginBottom: "0.75rem"
-                  }}>
-                    Court Hours
-                  </p>
-                  <p style={{ 
-                    color: theme.colors.text.secondary, 
-                    margin: 0, 
-                    fontSize: "1.15rem",
-                    fontFamily: "'Georgia', 'Times New Roman', serif"
-                  }}>
-                    Contact us for court-mandated hours
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Contact Information */}
           <div style={{ 
