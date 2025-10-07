@@ -22,21 +22,11 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: '8'
-
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      run: npm ci
 
-    - name: Run Snyk to check for vulnerabilities
-      uses: snyk/actions/node@master
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
+    - name: Run npm audit
+      run: npm audit --audit-level moderate
 
   code-scan:
     name: Code Security Analysis

@@ -17,7 +17,6 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "test": "vitest",
     "test:unit": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "test:coverage": "vitest run --coverage",
     "test:web-vitals": "lighthouse-ci autorun",
@@ -37,6 +36,9 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@playwright/test": "^1.40.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",
