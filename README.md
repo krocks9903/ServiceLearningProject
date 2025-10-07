@@ -1,377 +1,236 @@
-# Service Learning Management Platform
+# Service Learning Management System
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/krocks9903/ServiceLearningProject)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.1-blue)](https://reactjs.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-Backend-green)](https://supabase.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Code Quality](https://img.shields.io/badge/Code%20Quality-A+-green)](https://github.com/krocks9903/ServiceLearningProject)
+A comprehensive volunteer management platform built with modern web technologies to streamline community service coordination and enhance volunteer engagement.
 
-A next-generation volunteer management system built with cutting-edge technologies. This enterprise-grade platform revolutionizes community service coordination through AI-powered automation, real-time collaboration, and advanced analytics.
+## Overview
 
-## Architecture Overview
-
-```mermaid
-graph TB
-    A[Frontend - React 19] --> B[API Gateway]
-    B --> C[Supabase Backend]
-    C --> D[PostgreSQL Database]
-    C --> E[Real-time Subscriptions]
-    C --> F[Authentication Service]
-    A --> G[OpenAI Integration]
-    A --> H[Analytics Dashboard]
-    I[Admin Panel] --> B
-    J[Volunteer Portal] --> B
-    K[Mobile App] --> B
-```
-
-## Core Features
-
-### Advanced Authentication & Security
-- **Multi-factor Authentication (MFA)** with TOTP support
-- **Role-based Access Control (RBAC)** with granular permissions
-- **OAuth 2.0 Integration** for social logins
-- **Session Management** with automatic token refresh
-- **Audit Logging** for compliance tracking
-
-### AI-Powered Intelligence
-- **Machine Learning Recommendations** for optimal volunteer-event matching
-- **Natural Language Processing** for automated event descriptions
-- **Predictive Analytics** for volunteer engagement forecasting
-- **Smart Scheduling** with conflict resolution algorithms
-- **Sentiment Analysis** for volunteer feedback processing
-
-### Real-time Collaboration
-- **WebSocket Integration** for instant updates
-- **Live Notifications** with push notification support
-- **Collaborative Editing** for event management
-- **Real-time Chat** for team communication
-- **Live Dashboard** with streaming data
-
-### Advanced Analytics & Reporting
-- **Business Intelligence Dashboard** with interactive visualizations
-- **Custom Report Builder** with drag-and-drop interface
-- **Data Export** in multiple formats (PDF, Excel, CSV)
-- **Scheduled Reports** with automated delivery
-- **Performance Metrics** with KPI tracking
+This platform serves as a centralized hub for managing volunteer activities, events, and community service programs. Built with a focus on user experience, scalability, and maintainability, it provides both volunteer-facing features and administrative tools for program coordinators.
 
 ## Technology Stack
 
-### Frontend Architecture
-- **React 19** with Concurrent Features and Server Components
-- **TypeScript 5.8** with strict type checking
-- **Vite 7** for lightning-fast development and builds
-- **React Router 7** with data loading and error boundaries
-- **TanStack Query** for server state management
-- **Zustand** for client state management
-- **Framer Motion** for advanced animations
-- **React Hook Form** with Zod validation
+- **Frontend**: React 19 with TypeScript
+- **Build Tool**: Vite 7
+- **Backend**: Supabase (PostgreSQL, Authentication, Real-time)
+- **AI Integration**: OpenAI GPT-4 for intelligent recommendations
+- **Styling**: CSS3 with custom design system
+- **Development**: ESLint, Prettier, Husky for code quality
 
-### Backend Infrastructure
-- **Supabase** as Backend-as-a-Service
-  - PostgreSQL 15 with advanced indexing
-  - Row Level Security (RLS) policies
-  - Real-time subscriptions
-  - Edge Functions for serverless compute
-  - Storage with CDN integration
-- **Redis** for caching and session storage
-- **Cloudflare Workers** for edge computing
+## Development Methodology
 
-### AI & Machine Learning
-- **OpenAI GPT-4o** for natural language processing
-- **TensorFlow.js** for client-side ML models
-- **Custom ML Pipelines** for recommendation engines
-- **Vector Embeddings** for semantic search
+This project was developed using a combination of **Rapid Prototyping**, **Iterative Development**, and **Incremental Delivery** methodologies:
 
-### Development & DevOps
-- **ESLint** with TypeScript rules
-- **Prettier** for code formatting
-- **Husky** for git hooks
-- **GitHub Actions** for CI/CD
-- **Docker** for containerization
-- **Vercel** for frontend deployment
-- **Railway** for backend services
+### Rapid Prototyping
+- Initial MVP was built quickly to validate core concepts
+- Focused on essential features: authentication, volunteer registration, event management
+- Used modern tooling (Vite, React 19) for fast development cycles
+- Leveraged Supabase for rapid backend setup
+
+### Iterative Development
+- Continuous refinement of features based on user feedback
+- Regular code reviews and refactoring
+- Progressive enhancement of UI/UX components
+- Database schema evolution through migration scripts
+
+### Incremental Delivery
+- Features delivered in small, manageable increments
+- Each increment builds upon previous functionality
+- Modular architecture allows for independent feature development
+- Version-controlled releases with clear feature sets
+
+## Features
+
+### Core Functionality
+- **User Authentication**: Secure login/signup with role-based access
+- **Volunteer Management**: Comprehensive volunteer profiles and tracking
+- **Event Management**: Create, manage, and track volunteer events
+- **Admin Dashboard**: Administrative tools for program oversight
+- **Real-time Updates**: Live data synchronization across the platform
+
+### Advanced Features
+- **AI-Powered Recommendations**: Intelligent volunteer-event matching
+- **Reporting System**: Comprehensive analytics and reporting tools
+- **Kiosk Mode**: Check-in/out functionality for physical locations
+- **Responsive Design**: Mobile-first approach for all devices
 
 ## Project Structure
 
 ```
 src/
-├── app/                    # Next.js 14 App Router
-│   ├── (auth)/            # Route groups
-│   ├── (dashboard)/       # Protected routes
-│   └── api/               # API routes
-├── components/            # Reusable UI components
-│   ├── ui/               # Base UI components (shadcn/ui)
-│   ├── forms/            # Form components
-│   ├── charts/           # Data visualization
-│   └── layout/           # Layout components
-├── lib/                  # Utility libraries
-│   ├── auth/             # Authentication logic
-│   ├── db/               # Database utilities
-│   ├── ai/               # AI/ML utilities
-│   └── utils/            # General utilities
-├── hooks/                # Custom React hooks
-├── types/                # TypeScript definitions
-├── styles/               # Global styles
-└── config/               # Configuration files
+├── components/          # Reusable UI components
+│   ├── admin/          # Admin-specific components
+│   ├── ai/             # AI integration components
+│   ├── scheduling/     # Event scheduling components
+│   └── shared/         # Shared components
+├── hooks/              # Custom React hooks
+├── pages/              # Application pages
+│   └── admin/          # Admin pages
+├── services/           # External service integrations
+├── types/              # TypeScript type definitions
+├── utils/              # Utility functions
+└── theme.ts            # Design system configuration
 ```
 
-## Advanced Setup
+## Setup Instructions
 
 ### Prerequisites
 - Node.js 20+ (LTS recommended)
-- pnpm 8+ (recommended package manager)
-- Docker Desktop (for local development)
-- Git 2.40+
+- npm or yarn package manager
+- Git
+- Supabase account (for backend services)
 
-### Environment Configuration
+### Installation
 
-Create a comprehensive `.env.local` file:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ServiceLearningProject.git
+   cd ServiceLearningProject
+   ```
 
-```bash
-# Database Configuration
-DATABASE_URL="postgresql://..."
-DIRECT_URL="postgresql://..."
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Authentication
-NEXTAUTH_SECRET="your-secret-key"
-NEXTAUTH_URL="http://localhost:3000"
+3. **Environment Configuration**
+   Create a `.env.local` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_OPENAI_API_KEY=your_openai_api_key
+   ```
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+4. **Database Setup**
+   - Create a new Supabase project
+   - Run the SQL scripts in `docs/database/` to set up your database schema
+   - Configure Row Level Security (RLS) policies as needed
 
-# AI Services
-OPENAI_API_KEY="sk-..."
-ANTHROPIC_API_KEY="sk-ant-..."
+5. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
 
-# Analytics
-NEXT_PUBLIC_GOOGLE_ANALYTICS="G-..."
-NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+6. **Access the Application**
+   Open [http://localhost:5173](http://localhost:5173) in your browser
 
-# External Services
-RESEND_API_KEY="re_..."
-STRIPE_SECRET_KEY="sk_..."
+### Available Scripts
 
-# Redis
-REDIS_URL="redis://localhost:6379"
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
+- `npm run type-check` - Run TypeScript type checking
 
-# Feature Flags
-NEXT_PUBLIC_ENABLE_AI="true"
-NEXT_PUBLIC_ENABLE_ANALYTICS="true"
-```
+## Database Schema
 
-### Development Workflow
+The application uses the following main database tables:
 
-```bash
-# Install dependencies
-pnpm install
+- **profiles** - User profile information
+- **events** - Volunteer events and opportunities
+- **shifts** - Event time slots
+- **hour_logs** - Volunteer hour tracking
+- **volunteer_assignments** - Event registrations
+- **organizations** - Partner organizations
+- **sites** - Physical locations
 
-# Start development environment
-pnpm dev
+## Security Features
 
-# Run type checking
-pnpm type-check
-
-# Run linting
-pnpm lint
-
-# Run tests
-pnpm test
-
-# Build for production
-pnpm build
-
-# Start production server
-pnpm start
-```
-
-### Docker Development
-
-  ```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
+- **Authentication**: Supabase Auth with email/password
+- **Authorization**: Role-based access control (RBAC)
+- **Data Protection**: Row Level Security (RLS) policies
+- **Input Validation**: Client and server-side validation
+- **Secure Headers**: HTTPS enforcement and security headers
 
 ## Performance Optimizations
 
-### Frontend Performance
-- **Code Splitting** with dynamic imports
-- **Tree Shaking** for minimal bundle size
-- **Image Optimization** with Next.js Image component
-- **Lazy Loading** for non-critical components
-- **Service Worker** for offline functionality
-- **CDN Integration** for static assets
+- **Code Splitting**: Dynamic imports for route-based splitting
+- **Lazy Loading**: Components loaded on demand
+- **Optimized Builds**: Vite's optimized production builds
+- **Caching**: Supabase real-time subscriptions with caching
+- **Image Optimization**: Responsive images and lazy loading
 
-### Database Performance
-- **Connection Pooling** with PgBouncer
-- **Query Optimization** with proper indexing
-- **Read Replicas** for scaling read operations
-- **Caching Strategy** with Redis
-- **Database Partitioning** for large datasets
+## Contributing
 
-### Monitoring & Observability
-- **Application Performance Monitoring** with Sentry
-- **Real User Monitoring** with Web Vitals
-- **Error Tracking** with comprehensive logging
-- **Uptime Monitoring** with health checks
-- **Performance Metrics** with custom dashboards
+Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-## Security Implementation
+### Development Workflow
 
-### Data Protection
-- **End-to-End Encryption** for sensitive data
-- **GDPR Compliance** with data anonymization
-- **SOC 2 Type II** security standards
-- **Regular Security Audits** with automated scanning
-- **Dependency Vulnerability** monitoring
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Authentication Security
-- **JWT with RS256** signing
-- **Refresh Token Rotation**
-- **Rate Limiting** with Redis
-- **IP Whitelisting** for admin access
-- **Brute Force Protection**
+## Testing
+
+The project includes comprehensive testing setup:
+
+- **Unit Tests**: Component and utility function testing
+- **Integration Tests**: API and database integration testing
+- **E2E Tests**: End-to-end user workflow testing
+- **Performance Tests**: Lighthouse CI for performance monitoring
+
+## Deployment
+
+### Production Deployment
+
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to your hosting platform**
+   - Vercel (recommended for frontend)
+   - Netlify
+   - AWS S3 + CloudFront
+   - Any static hosting service
+
+3. **Configure environment variables** in your hosting platform
+
+4. **Set up Supabase** for production database and authentication
+
+### Environment Variables
+
+Ensure the following environment variables are set in production:
+
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `VITE_OPENAI_API_KEY` - Your OpenAI API key (if using AI features)
 
 ## API Documentation
 
-### RESTful API Endpoints
+The application integrates with Supabase for backend services. Key API endpoints include:
 
-```typescript
-// Authentication
-POST /api/auth/login
-POST /api/auth/register
-POST /api/auth/refresh
-DELETE /api/auth/logout
+- **Authentication**: User login, signup, and session management
+- **Volunteers**: CRUD operations for volunteer profiles
+- **Events**: Event creation, management, and registration
+- **Analytics**: Reporting and data aggregation
 
-// Volunteer Management
-GET /api/volunteers
-POST /api/volunteers
-GET /api/volunteers/:id
-PUT /api/volunteers/:id
-DELETE /api/volunteers/:id
+## Troubleshooting
 
-// Event Management
-GET /api/events
-POST /api/events
-GET /api/events/:id
-PUT /api/events/:id
-DELETE /api/events/:id
+### Common Issues
 
-// Analytics
-GET /api/analytics/overview
-GET /api/analytics/volunteers
-GET /api/analytics/events
-GET /api/analytics/reports
-```
+1. **Build Errors**: Ensure all dependencies are installed and Node.js version is compatible
+2. **Database Connection**: Verify Supabase credentials and project status
+3. **Authentication Issues**: Check Supabase Auth configuration and RLS policies
+4. **Performance Issues**: Review browser console for errors and check network requests
 
-### GraphQL API (Optional)
+### Getting Help
 
-```graphql
-type Query {
-  volunteers: [Volunteer!]!
-  events: [Event!]!
-  analytics: Analytics!
-}
-
-type Mutation {
-  createVolunteer(input: VolunteerInput!): Volunteer!
-  updateEvent(id: ID!, input: EventInput!): Event!
-}
-
-type Subscription {
-  volunteerUpdates: Volunteer!
-  eventUpdates: Event!
-}
-```
-
-## Testing Strategy
-
-### Test Pyramid
-- **Unit Tests** (80%) - Jest + React Testing Library
-- **Integration Tests** (15%) - Cypress
-- **E2E Tests** (5%) - Playwright
-
-### Quality Gates
-- **Code Coverage** minimum 90%
-- **Type Coverage** 100%
-- **Performance Budget** enforcement
-- **Accessibility** WCAG 2.1 AA compliance
-
-## Deployment Architecture
-
-### Production Environment
-- **Frontend**: Vercel Edge Network
-- **API**: Supabase Edge Functions
-- **Database**: Supabase PostgreSQL with read replicas
-- **CDN**: Cloudflare for global distribution
-- **Monitoring**: Grafana + Prometheus
-
-### CI/CD Pipeline
-1. **Code Quality Checks** (ESLint, Prettier, TypeScript)
-2. **Security Scanning** (Snyk, CodeQL)
-3. **Automated Testing** (Unit, Integration, E2E)
-4. **Performance Testing** (Lighthouse CI)
-5. **Deployment** (Blue-Green strategy)
-
-## Contributing Guidelines
-
-### Development Standards
-- **Conventional Commits** for semantic versioning
-- **Branch Protection** with required reviews
-- **Automated Testing** on all PRs
-- **Code Review** checklist enforcement
-- **Documentation** updates required
-
-### Code Style
-- **ESLint** configuration with TypeScript rules
-- **Prettier** for consistent formatting
-- **Husky** pre-commit hooks
-- **EditorConfig** for IDE consistency
-
-## Roadmap
-
-### Q1 2024 - Foundation
-- [x] Core authentication system
-- [x] Basic volunteer management
-- [x] Event scheduling
-- [x] Admin dashboard
-
-### Q2 2024 - Intelligence
-- [x] AI-powered recommendations
-- [x] Advanced analytics
-- [x] Real-time notifications
-- [x] Mobile optimization
-
-### Q3 2024 - Scale
-- [ ] Multi-tenant architecture
-- [ ] Advanced reporting
-- [ ] API marketplace
-- [ ] Third-party integrations
-
-### Q4 2024 - Innovation
-- [ ] Mobile applications
-- [ ] IoT device integration
-- [ ] Blockchain verification
-- [ ] Advanced AI features
-
-## Support & Community
-
-- **Documentation**: [docs.servicelearning.app](https://docs.servicelearning.app)
-- **Issues**: [GitHub Issues](https://github.com/krocks9903/ServiceLearningProject/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/krocks9903/ServiceLearningProject/discussions)
-- **Discord**: [Community Server](https://discord.gg/servicelearning)
+- Check the [Issues](https://github.com/your-username/ServiceLearningProject/issues) page
+- Review the [Documentation](docs/) folder
+- Contact the development team
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with modern web technologies and best practices
+- Designed for scalability and maintainability
+- Community-driven development approach
+- Special thanks to all contributors and volunteers
 
 ---
 
