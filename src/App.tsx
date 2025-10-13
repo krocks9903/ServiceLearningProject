@@ -18,6 +18,9 @@ import AdminShiftsPage from "./pages/admin/AdminShiftsPage";
 import { useAuth } from "./hooks/useAuth";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 import { theme } from "./theme";
+import HoursPage from "./pages/HoursPage";
+
+
 
 function App() {
   const { loading } = useAuth();
@@ -51,6 +54,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/hours" element={<HoursPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
