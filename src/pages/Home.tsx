@@ -1,10 +1,48 @@
+import { useEffect } from "react";
+import { supabase } from "../services/supabaseClient";
 import { Link } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
 import { theme } from "../theme"
 
 export default function Home() {
   const { user } = useAuth();
-  
+    // --- SUPABASE CONNECTION TEST ---
+  useEffect(() => {
+    (async () => {
+      console.log("🔍 Testing Supabase connection...");
+
+      // Env sanity (don’t print secrets)
+      console.log("ENV check:", {
+        urlSet: !!import.meta.env.VITE_SUPABASE_URL,
+        keySet: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      });
+
+      // Reachability probe (intentionally fake table)
+      const { error } = await supabase
+        .from("this_table_does_not_exist")
+        .select("*")
+        .limit(1);
+
+      if (error?.message) {
+        console.log(
+          "✅ Supabase reachable (expected error due to fake table):",
+          error.message
+        );
+      } else {
+        console.log("✅ Supabase reachable with no error (you probably hit a real table).");
+      }
+
+      // Auth endpoint check (works even if not logged in)
+      const { data: sessionData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.warn("Auth check error (SDK still working):", authError.message);
+      } else {
+        console.log("Auth check OK. Logged in?", !!sessionData.session);
+      }
+    })();
+  }, []);
+  // --- END TEST ---
+
   // Professional stock imagery
   const heroImage = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
   const childrenImage = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80"
