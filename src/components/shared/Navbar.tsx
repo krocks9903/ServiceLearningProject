@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useAuth } from "../../hooks/useAuth.tsx"
 import { theme } from "../../theme"
@@ -6,12 +6,13 @@ import { theme } from "../../theme"
 export default function Navbar() {
   const { user, isAdmin, signOut } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
       await signOut();
-      window.location.href = "/login";
+      navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }

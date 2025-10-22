@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { supabase } from "../services/supabaseClient"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
+import DatePicker from "../components/shared/DatePicker"
 import { theme } from "../theme"
 
 export default function SignupPage() {
@@ -149,13 +150,19 @@ export default function SignupPage() {
     } as React.CSSProperties,
     row: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+      gridTemplateColumns: "1fr 1fr",
       gap: "1rem",
+      alignItems: "start",
+      "@media (max-width: 768px)": {
+        gridTemplateColumns: "1fr",
+      }
     } as React.CSSProperties,
     inputGroup: {
       display: "flex",
       flexDirection: "column" as const,
       gap: "0.5rem",
+      width: "100%",
+      minWidth: 0,
     } as React.CSSProperties,
     label: {
       fontSize: theme.typography.fontSize.sm,
@@ -419,6 +426,7 @@ export default function SignupPage() {
         date_of_birth: dateOfBirth || null,
         address: addressData,
         status: "pending", // Will be activated after background check
+        role: "volunteer", // Set role as volunteer
         updated_at: new Date().toISOString()
       };
 
@@ -518,7 +526,7 @@ export default function SignupPage() {
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Name and Contact Information</h2>
               
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="firstName" style={styles.label}>First Name *</label>
                   <input
@@ -544,7 +552,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="nickname" style={styles.label}>Nickname</label>
                   <input
@@ -597,7 +605,7 @@ export default function SignupPage() {
                 />
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="street2" style={styles.label}>Street 2</label>
                   <input
@@ -621,7 +629,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="city" style={styles.label}>City</label>
                   <input
@@ -646,7 +654,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="zipCode" style={styles.label}>Zip/Postal Code</label>
                   <input
@@ -675,7 +683,7 @@ export default function SignupPage() {
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Phone Numbers</h2>
               
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="homePhone" style={styles.label}>Home Phone</label>
                   <input
@@ -757,15 +765,13 @@ export default function SignupPage() {
                 This information helps us better understand our volunteer community.
               </p>
               
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="dateOfBirth" style={styles.label}>Date of Birth</label>
-                  <input
-                    id="dateOfBirth"
-                    type="date"
+                  <DatePicker
+                    label="Date of Birth"
                     value={dateOfBirth}
-                    onChange={e => setDateOfBirth(e.target.value)}
-                    style={styles.input}
+                    onChange={setDateOfBirth}
+                    placeholder="Select your date of birth"
                   />
                 </div>
                 
@@ -786,7 +792,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="education" style={styles.label}>Education</label>
                   <select
@@ -946,7 +952,7 @@ export default function SignupPage() {
                 In case of emergency, who should we contact?
               </p>
               
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="emergencyFirstName" style={styles.label}>First Name</label>
                   <input
@@ -970,7 +976,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="emergencyHomePhone" style={styles.label}>Home Phone</label>
                   <input
@@ -1013,7 +1019,7 @@ export default function SignupPage() {
                 Create a secure password to manage your volunteer profile online.
               </p>
               
-              <div style={styles.row}>
+              <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <label htmlFor="password" style={styles.label}>Password *</label>
                   <input
@@ -1179,6 +1185,11 @@ export default function SignupPage() {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 768px) {
+          .signup-row {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
     </div>

@@ -60,7 +60,7 @@ export default function ShiftManagementModal({
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: "rgba(86, 164, 34, 0.5)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -281,26 +281,37 @@ export default function ShiftManagementModal({
   const fetchShifts = async () => {
     setShiftsLoading(true)
     try {
-      const { data, error } = await supabase
+      // Fetch shifts
+      const { data: shiftsData, error: shiftsError } = await supabase
         .from("shifts")
-        .select(`
-          *,
-          volunteer_assignments(count)
-        `)
+        .select("*")
         .eq("event_id", event.id)
         .order("start_time")
 
-      if (error) {
-        console.error("Error fetching shifts:", error)
+      if (shiftsError) {
+        console.error("Error fetching shifts:", shiftsError)
         setError("Failed to load shifts")
         return
       }
 
-      // Transform data to include volunteer count
-      const shiftsWithCount = data?.map(shift => ({
-        ...shift,
-        volunteer_count: shift.volunteer_assignments?.[0]?.count || 0
-      })) || []
+      // Fetch volunteer assignments count for each shift
+      const shiftsWithCount = await Promise.all(
+        (shiftsData || []).map(async (shift) => {
+          const { count, error: countError } = await supabase
+            .from("volunteer_assignments")
+            .select("*", { count: "exact", head: true })
+            .eq("shift_id", shift.id)
+
+          if (countError) {
+            console.error("Error counting assignments:", countError)
+          }
+
+          return {
+            ...shift,
+            volunteer_count: count || 0
+          }
+        })
+      )
 
       setShifts(shiftsWithCount)
     } catch (error) {

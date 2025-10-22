@@ -13,15 +13,14 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage"
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
 import AdminVolunteersPage from "./pages/admin/AdminVolunteersPage"
 import AdminShiftsPage from "./pages/admin/AdminShiftsPage"
+import AdminHoursPage from "./pages/admin/AdminHoursPage"
+import KioskPage from "./pages/KioskPage"
 import { useAuth } from "./hooks/useAuth"
 import { AdminAuthProvider } from "./hooks/useAdminAuth"
 import { theme } from "./theme"
 
 function App() {
   const { loading } = useAuth();
-  
-  // Debug: Log loading state
-  console.log("App loading state:", loading)
   
   if (loading) {
     return (
@@ -37,8 +36,6 @@ function App() {
     );
   }
   
-  console.log("App loaded successfully!")
-  
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
@@ -52,6 +49,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/kiosk" element={<KioskPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           
@@ -74,6 +72,11 @@ function App() {
           <Route path="/admin/shifts" element={
             <AdminAuthProvider>
               <AdminShiftsPage />
+            </AdminAuthProvider>
+          } />
+          <Route path="/admin/hours" element={
+            <AdminAuthProvider>
+              <AdminHoursPage />
             </AdminAuthProvider>
           } />
         </Routes>
@@ -164,6 +167,17 @@ function App() {
                     transition: theme.transitions.fast,
                   }}>
                     Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/kiosk" style={{ 
+                    color: 'white', 
+                    textDecoration: 'none', 
+                    opacity: 0.85,
+                    fontSize: theme.typography.fontSize.sm,
+                    transition: theme.transitions.fast,
+                  }}>
+                    Check-In Kiosk
                   </Link>
                 </li>
                 <li>

@@ -7,9 +7,9 @@ export default function Home() {
   
   // Professional stock imagery
   const heroImage = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
-  const childrenImage = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80"
-  const familiesImage = "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=800&q=80"
-  const seniorsImage = "https://tse4.mm.bing.net/th/id/OIP.VOcD0nIerwujE0BWYOhLWwHaEO?pid=Api&P=0&h=220"
+  const childrenImage = "/feedingfamilies-scaled1.jpg"
+  const familiesImage = "/family.jpg"
+  const seniorsImage = "/seniros.jpg"
 
   const styles = {
     container: {
@@ -145,6 +145,7 @@ export default function Home() {
       width: "100%",
       height: "240px",
       objectFit: "cover",
+      objectPosition: "center top",
     } as React.CSSProperties,
     programContent: {
       padding: "2rem",
@@ -448,7 +449,7 @@ export default function Home() {
                   If you are a new volunteer or have not been through our Orientation, please review this document for more information. The Volunteer Handbook is your extensive guide to volunteering at HCFB!
                 </p>
                 <a 
-                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D45772T5814847222R82362.PDF&MN=2022115790"
+                  href="/Volunteer Handbook 2025.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -509,7 +510,7 @@ export default function Home() {
                   Here is the Operations Manual for our Fulfill Mobile Pantries (FMP). Volunteers that attend FMP should review this manual for complete operating guidelines and procedures.
                 </p>
                 <a 
-                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D44263T3834518287R8589.PDF&MN=2009227680"
+                  href="/Fulfill Mobile Pantry Ops Manualv6.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -837,7 +838,7 @@ export default function Home() {
                     color: theme.colors.primary, 
                     marginBottom: "0.5rem"
                   }}>
-                    Ashley Fanslau
+                    Angelina Codi
                   </h4>
                   <p style={{ 
                     color: theme.colors.text.secondary, 
@@ -1059,7 +1060,7 @@ export default function Home() {
               lineHeight: "1.6"
             }}>
               <strong>Important:</strong> All volunteering must be scheduled in advance. 
-              Contact Ashley Fanslau, Volunteer Coordinator, for more information.
+              Contact Angelina Codi, Volunteer Coordinator, for more information.
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { supabase } from "../services/supabaseClient"
 import { useAuth } from "../hooks/useAuth"
 import { theme } from "../theme"
+import DatePicker from "../components/shared/DatePicker"
 
 // Type definitions (moved inline since report.d.ts was removed)
 interface EventReport {
@@ -163,12 +164,36 @@ export default function ReportsPage() {
 
   const fetchVolunteerReports = async () => {
     try {
-      const { data: volunteers, error } = await supabase
+      // First try to get volunteers with role = 'volunteer'
+      let { data: volunteers, error } = await supabase
         .from("profiles")
-        .select("id, name, email")
+        .select("id, first_name, last_name, email")
         .eq("role", "volunteer")
 
-      if (error) throw error
+      // If no volunteers found with role, try to get all profiles and filter
+      if (!volunteers || volunteers.length === 0) {
+        console.log('No volunteers found with role=volunteer, trying fallback query...')
+        const { data: allProfiles, error: fallbackError } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email, role")
+        
+        if (fallbackError) {
+          console.error('Error in fallback query:', fallbackError)
+          throw fallbackError
+        }
+        
+        // Filter for volunteers (role = 'volunteer' or null/undefined for existing users)
+        volunteers = allProfiles?.filter(profile => 
+          !profile.role || profile.role === 'volunteer'
+        ) || []
+        
+        console.log('Found volunteers via fallback:', volunteers)
+      }
+
+      if (error) {
+        console.error('Error fetching volunteers:', error)
+        throw error
+      }
 
       const reports: VolunteerReport[] = await Promise.all(
         (volunteers || []).map(async (volunteer) => {
@@ -220,7 +245,7 @@ export default function ReportsPage() {
 
           return {
             volunteer_id: volunteer.id,
-            volunteer_name: volunteer.name || "Unknown",
+            volunteer_name: `${volunteer.first_name || ''} ${volunteer.last_name || ''}`.trim() || "Unknown",
             volunteer_email: volunteer.email || "",
             total_hours: totalHours,
             total_events: uniqueEvents.size,
@@ -645,21 +670,19 @@ export default function ReportsPage() {
 
         <div style={styles.filters}>
           <div style={styles.filterGroup}>
-            <label style={styles.label}>Start Date</label>
-            <input
-              type="date"
-              style={styles.input}
+            <DatePicker
+              label="Start Date"
               value={filters.start_date}
-              onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
+              onChange={(date) => setFilters({ ...filters, start_date: date })}
+              placeholder="Select start date"
             />
           </div>
           <div style={styles.filterGroup}>
-            <label style={styles.label}>End Date</label>
-            <input
-              type="date"
-              style={styles.input}
+            <DatePicker
+              label="End Date"
               value={filters.end_date}
-              onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
+              onChange={(date) => setFilters({ ...filters, end_date: date })}
+              placeholder="Select end date"
             />
           </div>
           <button

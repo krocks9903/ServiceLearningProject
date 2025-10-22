@@ -4,6 +4,7 @@ import { supabase } from "../../services/supabaseClient"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
 import { theme } from "../../theme"
 import ShiftManagementModal from "../../components/admin/ShiftManagementModal"
+import DatePicker from "../../components/shared/DatePicker"
 import VolunteerAssignmentsModal from "../../components/admin/VolunteerAssignmentsModal"
 
 interface Event {
@@ -316,10 +317,7 @@ export default function AdminShiftsPage() {
     try {
       const { data, error } = await supabase
         .from('events')
-        .select(`
-          *,
-          volunteer_assignments(count)
-        `)
+        .select('*')
         .order('start_date', { ascending: false })
 
       if (error) {
@@ -328,11 +326,24 @@ export default function AdminShiftsPage() {
         return
       }
 
-      // Transform data to include volunteer count
-      const eventsWithCount = data?.map(event => ({
-        ...event,
-        volunteer_count: event.volunteer_assignments?.[0]?.count || 0
-      })) || []
+      // Fetch volunteer count for each event
+      const eventsWithCount = await Promise.all(
+        (data || []).map(async (event) => {
+          const { count, error: countError } = await supabase
+            .from('volunteer_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+
+          if (countError) {
+            console.error('Error counting assignments:', countError)
+          }
+
+          return {
+            ...event,
+            volunteer_count: count || 0
+          }
+        })
+      )
 
       setEvents(eventsWithCount)
     } catch (error) {
@@ -348,14 +359,18 @@ export default function AdminShiftsPage() {
     setLoading(true)
 
     try {
+      // Convert local datetime to ISO string for database storage
+      const startDate = new Date(formData.start_date)
+      const endDate = new Date(formData.end_date)
+      
       const { error } = await supabase
         .from('events')
         .insert({
           title: formData.title,
           description: formData.description,
           location: formData.location,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
           status: 'active'
         })
@@ -385,12 +400,24 @@ export default function AdminShiftsPage() {
 
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event)
+    
+    // Convert UTC timestamp to local datetime string
+    const formatLocalDateTime = (dateString: string) => {
+      const date = new Date(dateString)
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day}T${hours}:${minutes}`
+    }
+    
     setFormData({
       title: event.title,
       description: event.description,
       location: event.location,
-      start_date: event.start_date.substring(0, 16), // Format for datetime-local input
-      end_date: event.end_date.substring(0, 16),
+      start_date: formatLocalDateTime(event.start_date),
+      end_date: formatLocalDateTime(event.end_date),
       max_volunteers: event.max_volunteers?.toString() || '',
     })
     setShowCreateForm(true)
@@ -404,14 +431,18 @@ export default function AdminShiftsPage() {
     try {
       if (!editingEvent) return
 
+      // Convert local datetime to ISO string for database storage
+      const startDate = new Date(formData.start_date)
+      const endDate = new Date(formData.end_date)
+
       const { error } = await supabase
         .from('events')
         .update({
           title: formData.title,
           description: formData.description,
           location: formData.location,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
         })
         .eq('id', editingEvent.id)
@@ -609,23 +640,23 @@ export default function AdminShiftsPage() {
                 </div>
                 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Start Date & Time *</label>
-                  <input
-                    type="datetime-local"
+                  <DatePicker
+                    label="Start Date & Time *"
                     value={formData.start_date}
-                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-                    style={styles.formInput}
+                    onChange={(date) => setFormData({...formData, start_date: date})}
+                    placeholder="Select start date and time"
+                    showTime={true}
                     required
                   />
                 </div>
                 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>End Date & Time *</label>
-                  <input
-                    type="datetime-local"
+                  <DatePicker
+                    label="End Date & Time *"
                     value={formData.end_date}
-                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-                    style={styles.formInput}
+                    onChange={(date) => setFormData({...formData, end_date: date})}
+                    placeholder="Select end date and time"
+                    showTime={true}
                     required
                   />
                 </div>

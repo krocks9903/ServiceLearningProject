@@ -109,7 +109,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Short timeout as fallback
     const timeout = setTimeout(() => {
       if (mounted) {
-        console.warn("Auth timeout - forcing loading to false")
         setLoading(false)
       }
     }, 2000) // 2 second timeout
@@ -142,11 +141,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    // Clear any cached session data
-    localStorage.removeItem('supabase.auth.token')
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+      // Clear any cached session data
+      localStorage.removeItem('supabase.auth.token')
+      sessionStorage.clear()
+    } catch (error) {
+      console.error('Error signing out:', error)
+      // Force clear local state even if signOut fails
+      setUser(null)
+      setProfile(null)
+    }
   }
 
   // Check if user is admin (default to false if no profile)

@@ -3,7 +3,7 @@ import { supabase } from "../services/supabaseClient"
 import { useAuth } from "../hooks/useAuth"
 import { theme } from "../theme"
 import EventRegistrationModal from "../components/scheduling/EventRegistrationModal"
-import VolunteerRecommendations from "../components/ai/VolunteerRecommendations"
+import Calendar from "../components/shared/Calendar"
 
 interface Event {
   id: string
@@ -24,24 +24,48 @@ export default function EventsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [calendarEvents, setCalendarEvents] = useState([])
   
   // Professional stock imagery
   const defaultEventImage = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1920&q=80"
 
   useEffect(() => {
     fetchEvents()
+    fetchCalendarEvents()
   }, [])
+
+  const fetchCalendarEvents = async () => {
+    try {
+      const { data: eventsData } = await supabase
+        .from('events')
+        .select('id, title, start_date, end_date, location, status')
+        .order('start_date', { ascending: true })
+
+      if (eventsData) {
+        const calendarEventsData = eventsData.map(event => ({
+          id: `event-${event.id}`,
+          title: event.title,
+          start: new Date(event.start_date),
+          end: new Date(event.end_date),
+          resource: { type: 'event', ...event },
+          color: event.status === 'active' ? theme.colors.primary : 
+                 event.status === 'completed' ? theme.colors.success : theme.colors.neutral[400]
+        }))
+        setCalendarEvents(calendarEventsData)
+      }
+    } catch (error) {
+      console.error('Error fetching calendar events:', error)
+    }
+  }
 
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
         .from("events")
-        .select(`
-          *,
-          shifts(id),
-          volunteer_assignments(count)
-        `)
+        .select("*")
         .eq("status", "active")
+        .gte("end_date", new Date().toISOString())
         .order("start_date", { ascending: true })
         .limit(20)
 
@@ -49,11 +73,24 @@ export default function EventsPage() {
         console.error("Error:", error)
         setMessage({ type: 'error', text: 'Failed to load events' })
       } else {
-        // Transform data to include volunteer count
-        const eventsWithCount = data?.map(event => ({
-          ...event,
-          volunteer_count: event.volunteer_assignments?.[0]?.count || 0
-        })) || []
+        // Fetch volunteer count for each event
+        const eventsWithCount = await Promise.all(
+          (data || []).map(async (event) => {
+            const { count, error: countError } = await supabase
+              .from("volunteer_assignments")
+              .select("*", { count: "exact", head: true })
+              .eq("event_id", event.id)
+
+            if (countError) {
+              console.error("Error counting assignments:", countError)
+            }
+
+            return {
+              ...event,
+              volunteer_count: count || 0
+            }
+          })
+        )
         setEvents(eventsWithCount)
       }
     } catch (error) {
@@ -149,6 +186,68 @@ export default function EventsPage() {
       </div>
 
       <div style={{ padding: '0 2rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Calendar Toggle */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '2rem',
+          padding: '1rem',
+          backgroundColor: 'white',
+          borderRadius: theme.borderRadius.lg,
+          boxShadow: theme.shadows.md
+        }}>
+          <h2 style={{
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.primary,
+            margin: 0
+          }}>
+            {showCalendar ? 'Calendar View' : 'Events List'}
+          </h2>
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            style={{
+              backgroundColor: theme.colors.primary,
+              color: 'white',
+              border: 'none',
+              borderRadius: theme.borderRadius.base,
+              padding: '0.5rem 1rem',
+              fontSize: theme.typography.fontSize.sm,
+              fontWeight: theme.typography.fontWeight.medium,
+              cursor: 'pointer',
+              transition: theme.transitions.base
+            }}
+          >
+            {showCalendar ? 'Show List' : 'Show Calendar'}
+          </button>
+        </div>
+
+        {showCalendar ? (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: theme.borderRadius.lg,
+            boxShadow: theme.shadows.md,
+            padding: '1rem',
+            marginBottom: '2rem'
+          }}>
+            <Calendar
+              events={calendarEvents}
+              onSelectEvent={(event) => {
+                const eventData = event.resource
+                if (eventData && eventData.type === 'event') {
+                  const foundEvent = events.find(e => e.id === eventData.id)
+                  if (foundEvent) {
+                    handleEventRegistration(foundEvent)
+                  }
+                }
+              }}
+              height={600}
+              showToolbar={true}
+            />
+          </div>
+        ) : null}
+
         {message && (
           <div style={{
             padding: '1rem 1.5rem',
@@ -177,19 +276,6 @@ export default function EventsPage() {
           </div>
         )}
 
-        {/* AI-Powered Volunteer Recommendations */}
-        {user && events.length > 0 && (
-          <VolunteerRecommendations
-            volunteerProfile={user}
-            availableEvents={events}
-            onEventSelect={(eventId) => {
-              const event = events.find(e => e.id === eventId)
-              if (event) {
-                handleEventRegistration(event)
-              }
-            }}
-          />
-        )}
 
         {events.length === 0 ? (
           <div style={{

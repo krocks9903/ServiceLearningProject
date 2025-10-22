@@ -316,6 +316,27 @@ export default function AdminDashboardPage() {
 
           <div 
             style={styles.actionCard}
+            onClick={() => navigate('/admin/hours')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.boxShadow = theme.shadows.lg
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = theme.shadows.md
+            }}
+          >
+            <h3 style={styles.actionTitle}>Approve Hours</h3>
+            <p style={styles.actionDescription}>
+              Review and approve volunteer hour submissions and logs.
+            </p>
+            <button style={styles.actionButton}>
+              Manage Hours →
+            </button>
+          </div>
+
+          <div 
+            style={styles.actionCard}
             onClick={() => navigate('/admin/shifts')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-4px)'
