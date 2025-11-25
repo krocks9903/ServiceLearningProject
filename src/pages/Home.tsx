@@ -677,7 +677,31 @@ export default function Home() {
                       margin: 0,
                       fontWeight: "500"
                     }}>
-                      Minimum age: 16 (weekdays), 14 (Saturdays with adult)
+                      Minimum age: 14
+                    </p>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: "0.5rem 0 0 0",
+                      fontWeight: "500"
+                    }}>
+                      All minors must be accompanied by an Adult
+                    </p>
+                  </div>
+                  <div style={{ 
+                    marginTop: "1rem", 
+                    padding: "0.75rem", 
+                    backgroundColor: theme.colors.success[50], 
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.success[200]}`
+                  }}>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.success[800],
+                      margin: 0,
+                      fontWeight: "500"
+                    }}>
+                      *Special/corporate groups available
                     </p>
                   </div>
                 </div>
@@ -739,7 +763,7 @@ export default function Home() {
                     color: theme.colors.text.primary,
                     marginBottom: "0.75rem"
                   }}>
-                    Tuesday-Thursday
+                    Monday-Thursday
                   </p>
                   <div style={{ 
                     fontSize: "1.15rem", 
@@ -771,6 +795,30 @@ export default function Home() {
                   }}>
                     <p style={{ margin: "0.5rem 0" }}>
                       <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am only</strong>
+                    </p>
+                  </div>
+                  <div style={{ 
+                    marginTop: "1rem", 
+                    padding: "0.75rem", 
+                    backgroundColor: theme.colors.info[50], 
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.info[200]}`
+                  }}>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: 0,
+                      fontWeight: "500"
+                    }}>
+                      Minimum age: 14
+                    </p>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: "0.5rem 0 0 0",
+                      fontWeight: "500"
+                    }}>
+                      All minors must be accompanied by an Adult
                     </p>
                   </div>
                   <div style={{ 

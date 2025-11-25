@@ -11,3 +11,10 @@ SELECT
 FROM information_schema.columns 
 WHERE table_name = 'hour_logs' 
 ORDER BY ordinal_position;
+
+
+
+
+
+
+

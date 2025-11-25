@@ -9,6 +9,7 @@ export interface Volunteer {
   total_hours: number
   events_attended: number
   last_volunteer_date: string | null
+  volunteer_number?: string
   // Additional comprehensive fields
   date_of_birth?: string
   address?: {

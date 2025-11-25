@@ -61,7 +61,8 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     try {
-      const { data, error } = await supabase
+      // First, get all active events
+      let query = supabase
         .from("events")
         .select("*")
         .eq("status", "active")
@@ -69,22 +70,24 @@ export default function EventsPage() {
         .order("start_date", { ascending: true })
         .limit(20)
 
+      const { data: allEvents, error } = await query
+
       if (error) {
         console.error("Error:", error)
         setMessage({ type: 'error', text: 'Failed to load events' })
-      } else {
-        // Fetch volunteer count for each event
+        return
+      }
+
+      // Filter private events - only show if user has access
+      if (!user) {
+        // Non-logged-in users can only see public events
+        const publicEvents = (allEvents || []).filter(e => !(e as any).is_private)
         const eventsWithCount = await Promise.all(
-          (data || []).map(async (event) => {
-            const { count, error: countError } = await supabase
+          publicEvents.map(async (event) => {
+            const { count } = await supabase
               .from("volunteer_assignments")
               .select("*", { count: "exact", head: true })
               .eq("event_id", event.id)
-
-            if (countError) {
-              console.error("Error counting assignments:", countError)
-            }
-
             return {
               ...event,
               volunteer_count: count || 0
@@ -92,7 +95,35 @@ export default function EventsPage() {
           })
         )
         setEvents(eventsWithCount)
+        return
       }
+
+      // For logged-in users, check private event access
+      const { data: visibilityData } = await supabase
+        .from("event_visibility")
+        .select("event_id")
+        .or(`volunteer_id.eq.${user.id},group_id.in.(SELECT group_id FROM volunteer_group_memberships WHERE volunteer_id.eq.${user.id})`)
+
+      const visiblePrivateEventIds = new Set((visibilityData || []).map(v => v.event_id))
+
+      // Filter events: show public events OR private events the user has access to
+      const filteredEvents = (allEvents || []).filter(e => 
+        !(e as any).is_private || visiblePrivateEventIds.has(e.id)
+      )
+
+      const eventsWithCount = await Promise.all(
+        filteredEvents.map(async (event) => {
+          const { count } = await supabase
+            .from("volunteer_assignments")
+            .select("*", { count: "exact", head: true })
+            .eq("event_id", event.id)
+          return {
+            ...event,
+            volunteer_count: count || 0
+          }
+        })
+      )
+      setEvents(eventsWithCount)
     } catch (error) {
       console.error("Error:", error)
       setMessage({ type: 'error', text: 'Failed to load events' })

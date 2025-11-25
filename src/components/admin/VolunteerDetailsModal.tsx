@@ -383,6 +383,20 @@ export default function VolunteerDetailsModal({
                       {volunteer.first_name} {volunteer.last_name}
                     </span>
                   </div>
+                  {volunteer.volunteer_number && (
+                    <div style={styles.field}>
+                      <span style={styles.fieldLabel}>Volunteer Number</span>
+                      <span style={{
+                        ...styles.fieldValue,
+                        fontFamily: 'monospace',
+                        fontSize: theme.typography.fontSize.lg,
+                        fontWeight: theme.typography.fontWeight.bold,
+                        color: theme.colors.primary,
+                      }}>
+                        {volunteer.volunteer_number}
+                      </span>
+                    </div>
+                  )}
                   <div style={styles.field}>
                     <span style={styles.fieldLabel}>Email</span>
                     <span style={styles.fieldValue}>{volunteer.email}</span>

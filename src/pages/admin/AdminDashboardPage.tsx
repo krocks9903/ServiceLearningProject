@@ -190,15 +190,38 @@ export default function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const { data, error } = await supabase.rpc('get_admin_stats')
-      
-      if (error) {
-        console.error('Error fetching stats:', error)
-        setError('Failed to load dashboard data')
-        return
-      }
+      setLoading(true)
+      setError(null)
 
-      setStats(data)
+      // Fetch all stats in parallel with individual error handling
+      const results = await Promise.allSettled([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer').eq('status', 'active'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer').eq('status', 'pending'),
+        supabase.from('events').select('*', { count: 'exact', head: true }),
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'active').gte('end_date', new Date().toISOString()),
+        supabase.from('hour_logs').select('hours')
+      ])
+
+      // Extract counts and data, handling failures gracefully
+      const totalVolunteers = results[0].status === 'fulfilled' ? (results[0].value.count || 0) : 0
+      const activeVolunteers = results[1].status === 'fulfilled' ? (results[1].value.count || 0) : 0
+      const pendingVolunteers = results[2].status === 'fulfilled' ? (results[2].value.count || 0) : 0
+      const totalEvents = results[3].status === 'fulfilled' ? (results[3].value.count || 0) : 0
+      const upcomingEvents = results[4].status === 'fulfilled' ? (results[4].value.count || 0) : 0
+      const hourLogs = results[5].status === 'fulfilled' ? (results[5].value.data || []) : []
+
+      // Calculate total hours
+      const totalHours = hourLogs.reduce((sum, log) => sum + (Number(log.hours) || 0), 0)
+
+      setStats({
+        total_volunteers: totalVolunteers,
+        active_volunteers: activeVolunteers,
+        pending_volunteers: pendingVolunteers,
+        total_events: totalEvents,
+        upcoming_events: upcomingEvents,
+        total_hours: Math.round(totalHours * 10) / 10 // Round to 1 decimal place
+      })
     } catch (error) {
       console.error('Error fetching stats:', error)
       setError('Failed to load dashboard data')

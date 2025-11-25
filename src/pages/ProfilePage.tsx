@@ -358,6 +358,29 @@ export default function ProfilePage() {
                   <div style={styles.infoValue}>{profile.email || "Not provided"}</div>
                 </div>
 
+                {(profile as any).volunteer_number && (
+                  <div style={styles.infoItem}>
+                    <div style={styles.infoLabel}>Volunteer Number</div>
+                    <div style={styles.infoValue}>
+                      <strong style={{ 
+                        fontSize: theme.typography.fontSize.lg,
+                        color: theme.colors.primary,
+                        fontFamily: 'monospace'
+                      }}>
+                        {(profile as any).volunteer_number}
+                      </strong>
+                    </div>
+                    <p style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      color: theme.colors.text.secondary,
+                      marginTop: '0.5rem',
+                      fontStyle: 'italic'
+                    }}>
+                      Use this number for on-site check-in at volunteer locations
+                    </p>
+                  </div>
+                )}
+
                 <div style={styles.infoItem}>
                   <div style={styles.infoLabel}>Phone Number</div>
                   <div style={styles.infoValue}>{profile.phone || "Not provided"}</div>

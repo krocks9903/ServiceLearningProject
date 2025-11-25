@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
 import { theme } from "../theme"
 import { supabase } from "../services/supabaseClient"
@@ -386,6 +386,74 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Volunteer Check-In Section */}
+      <div style={{
+        backgroundColor: theme.colors.white,
+        padding: '1.5rem',
+        borderRadius: theme.borderRadius.lg,
+        boxShadow: theme.shadows.md,
+        marginBottom: '2rem',
+        border: `2px solid ${theme.colors.primary[200]}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        background: `linear-gradient(135deg, ${theme.colors.primary}10 0%, ${theme.colors.secondary}10 100%)`
+      }}>
+        <div style={{ flex: 1, minWidth: '250px' }}>
+          <h3 style={{
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.primary,
+            marginBottom: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            📍 Volunteer Check-In
+          </h3>
+          <p style={{
+            fontSize: theme.typography.fontSize.sm,
+            color: theme.colors.text.secondary,
+            margin: 0,
+            lineHeight: '1.5'
+          }}>
+            Check in when you arrive at the volunteer location using your volunteer number or email
+          </p>
+        </div>
+        <Link to="/kiosk" style={{ textDecoration: 'none' }}>
+          <button style={{
+            backgroundColor: theme.colors.primary,
+            color: 'white',
+            border: 'none',
+            padding: '1rem 2rem',
+            borderRadius: theme.borderRadius.base,
+            fontSize: theme.typography.fontSize.base,
+            fontWeight: theme.typography.fontWeight.semibold,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: theme.shadows.md,
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#c72e3a'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+            e.currentTarget.style.boxShadow = theme.shadows.lg
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.primary
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = theme.shadows.md
+          }}>
+            Go to Check-In Kiosk →
+          </button>
+        </Link>
+      </div>
 
       {/* Quick Stats Cards */}
       <div style={styles.statsGrid}>

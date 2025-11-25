@@ -39,6 +39,8 @@ interface Assignment {
 
 export default function KioskPage() {
   const [volunteerEmail, setVolunteerEmail] = useState("")
+  const [volunteerNumber, setVolunteerNumber] = useState("")
+  const [lookupMethod, setLookupMethod] = useState<"email" | "number">("number")
   const [volunteer, setVolunteer] = useState<Volunteer | null>(null)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [loading, setLoading] = useState(false)
@@ -55,22 +57,33 @@ export default function KioskPage() {
 
   const handleVolunteerLookup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!volunteerEmail.trim()) return
+    
+    if (lookupMethod === "email" && !volunteerEmail.trim()) return
+    if (lookupMethod === "number" && !volunteerNumber.trim()) return
 
     setLoading(true)
     setMessage(null)
 
     try {
-      // Look up volunteer by email
-      const { data: volunteerData, error } = await supabase
+      let query = supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, phone')
-        .eq('email', volunteerEmail.trim().toLowerCase())
+        .select('id, first_name, last_name, email, phone, volunteer_number')
         .eq('status', 'active')
-        .single()
+      
+      // Look up by email or volunteer number
+      if (lookupMethod === "email") {
+        query = query.eq('email', volunteerEmail.trim().toLowerCase())
+      } else {
+        query = query.eq('volunteer_number', volunteerNumber.trim().toUpperCase())
+      }
+      
+      const { data: volunteerData, error } = await query.single()
 
       if (error || !volunteerData) {
-        setMessage({ type: 'error', text: 'Volunteer not found. Please check your email address.' })
+        const errorMsg = lookupMethod === "email" 
+          ? 'Volunteer not found. Please check your email address.'
+          : 'Volunteer not found. Please check your volunteer number.'
+        setMessage({ type: 'error', text: errorMsg })
         setVolunteer(null)
         setAssignments([])
         return
@@ -189,6 +202,7 @@ export default function KioskPage() {
 
   const resetKiosk = () => {
     setVolunteerEmail("")
+    setVolunteerNumber("")
     setVolunteer(null)
     setAssignments([])
     setMessage(null)
@@ -445,16 +459,75 @@ export default function KioskPage() {
       {!volunteer && (
         <form style={styles.form} onSubmit={handleVolunteerLookup}>
           <div style={styles.formGroup}>
-            <label style={styles.label}>Enter Your Email Address</label>
-            <input
-              type="email"
-              style={styles.input}
-              value={volunteerEmail}
-              onChange={(e) => setVolunteerEmail(e.target.value)}
-              placeholder="your.email@example.com"
-              required
-              disabled={loading}
-            />
+            <label style={styles.label}>Lookup Method</label>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setLookupMethod("number")
+                  setVolunteerEmail("")
+                }}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  border: `2px solid ${lookupMethod === "number" ? theme.colors.primary : theme.colors.neutral[300]}`,
+                  borderRadius: theme.borderRadius.base,
+                  backgroundColor: lookupMethod === "number" ? theme.colors.primary : 'white',
+                  color: lookupMethod === "number" ? 'white' : theme.colors.text.primary,
+                  cursor: 'pointer',
+                  fontWeight: theme.typography.fontWeight.medium,
+                }}
+              >
+                Volunteer Number
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLookupMethod("email")
+                  setVolunteerNumber("")
+                }}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  border: `2px solid ${lookupMethod === "email" ? theme.colors.primary : theme.colors.neutral[300]}`,
+                  borderRadius: theme.borderRadius.base,
+                  backgroundColor: lookupMethod === "email" ? theme.colors.primary : 'white',
+                  color: lookupMethod === "email" ? 'white' : theme.colors.text.primary,
+                  cursor: 'pointer',
+                  fontWeight: theme.typography.fontWeight.medium,
+                }}
+              >
+                Email Address
+              </button>
+            </div>
+          </div>
+          <div style={styles.formGroup}>
+            <label style={styles.label}>
+              {lookupMethod === "number" ? "Enter Your Volunteer Number" : "Enter Your Email Address"}
+            </label>
+            {lookupMethod === "number" ? (
+              <input
+                type="text"
+                style={styles.input}
+                value={volunteerNumber}
+                onChange={(e) => setVolunteerNumber(e.target.value.toUpperCase())}
+                placeholder="V-20250115-0001"
+                required
+                disabled={loading}
+                pattern="V-\d{8}-\d{4}"
+                title="Format: V-YYYYMMDD-XXXX"
+              />
+            ) : (
+              <input
+                type="email"
+                style={styles.input}
+                value={volunteerEmail}
+                onChange={(e) => setVolunteerEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                required
+                disabled={loading}
+              />
+            )}
           </div>
           <button
             type="submit"
@@ -474,6 +547,16 @@ export default function KioskPage() {
               {volunteer.first_name} {volunteer.last_name}
             </h2>
             <p style={styles.volunteerEmail}>{volunteer.email}</p>
+            {(volunteer as any).volunteer_number && (
+              <p style={{ 
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.text.secondary,
+                marginTop: '0.5rem',
+                fontWeight: theme.typography.fontWeight.semibold
+              }}>
+                Volunteer #: {(volunteer as any).volunteer_number}
+              </p>
+            )}
             <button
               style={styles.resetButton}
               onClick={resetKiosk}

@@ -163,12 +163,66 @@ Please read our [Contributing Guidelines](docs/CONTRIBUTING.md) for details on o
 
 ## Testing
 
-The project includes comprehensive testing setup:
+The project implements a comprehensive testing strategy covering all five levels of testing:
 
-- **Unit Tests**: Component and utility function testing
-- **Integration Tests**: API and database integration testing
-- **E2E Tests**: End-to-end user workflow testing
-- **Performance Tests**: Lighthouse CI for performance monitoring
+### Testing Levels
+
+1. **Unit Testing** - Component-level testing (`src/**/*.test.{ts,tsx}`)
+   - Tests individual functions and components in isolation
+   - Fast execution with mocked dependencies
+   - Run: `npm run test:unit`
+
+2. **Integration Testing** - Component interaction testing (`src/**/*.integration.test.{ts,tsx}`)
+   - Tests how components work together
+   - Includes API/service integration
+   - Run: `npm run test:integration`
+
+3. **Product Testing (E2E)** - End-to-end application testing (`tests/e2e/*.spec.ts`)
+   - Tests complete user workflows
+   - Runs in real browser environments
+   - Run: `npm run test:e2e`
+
+4. **Acceptance Testing** - Business requirement validation (`tests/acceptance/*.spec.ts`)
+   - Validates business requirements and user stories
+   - Tests from user perspective
+   - Run: `npm run test:acceptance`
+
+5. **Regression Testing** - Automated test suite execution
+   - Runs all tests to ensure no regressions
+   - Integrated with CI/CD pipeline
+   - Run: `npm run test:regression` or `npm run test:all`
+
+### Running Tests
+
+```bash
+# Run all tests
+npm run test:all
+
+# Run specific test suite
+npm run test:unit          # Unit tests only
+npm run test:integration   # Integration tests only
+npm run test:e2e          # E2E tests only
+npm run test:acceptance   # Acceptance tests only
+
+# Generate coverage report
+npm run test:coverage
+
+# Watch mode (unit and integration)
+npm run test:watch
+
+# Test UI
+npm run test:ui
+```
+
+### Test Coverage
+
+- Target: 80%+ code coverage for unit tests
+- Coverage reports generated in `coverage/` directory
+- HTML, JSON, and LCOV formats available
+
+For detailed testing documentation, see [TESTING.md](docs/TESTING.md)
+
+For presentation guide, see [TESTING_PRESENTATION.md](docs/TESTING_PRESENTATION.md)
 
 ## Deployment
 
