@@ -288,8 +288,8 @@ export default function VolunteerAssignmentsModal({
         .from("volunteer_assignments")
         .select(`
           *,
-          profiles!inner(id, email, first_name, last_name, phone),
-          shifts!inner(*)
+          profiles!volunteer_id!inner(id, email, first_name, last_name, phone),
+          shifts!shift_id!inner(*)
         `)
         .eq("event_id", eventId)
         .order("created_at", { ascending: false })

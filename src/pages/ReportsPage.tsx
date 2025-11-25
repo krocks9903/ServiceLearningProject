@@ -211,7 +211,7 @@ export default function ReportsPage() {
             .from("volunteer_assignments")
             .select(`
               shift_id,
-              shifts (
+              shifts!shift_id (
                 event_id
               )
             `)

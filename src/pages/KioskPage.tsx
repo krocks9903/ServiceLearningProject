@@ -67,23 +67,41 @@ export default function KioskPage() {
     try {
       let query = supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, phone, volunteer_number')
-        .eq('status', 'active')
+        .select('id, first_name, last_name, email, phone, volunteer_number, status')
       
       // Look up by email or volunteer number
       if (lookupMethod === "email") {
         query = query.eq('email', volunteerEmail.trim().toLowerCase())
       } else {
-        query = query.eq('volunteer_number', volunteerNumber.trim().toUpperCase())
+        // Look up by volunteer number (case-insensitive)
+        const searchNumber = volunteerNumber.trim().toUpperCase()
+        query = query.ilike('volunteer_number', searchNumber)
       }
       
       const { data: volunteerData, error } = await query.single()
 
       if (error || !volunteerData) {
+        console.error('Volunteer lookup error:', error, 'Search:', lookupMethod === "email" ? volunteerEmail : volunteerNumber)
         const errorMsg = lookupMethod === "email" 
           ? 'Volunteer not found. Please check your email address.'
-          : 'Volunteer not found. Please check your volunteer number.'
+          : `Volunteer not found with number: ${volunteerNumber.trim().toUpperCase()}. Please check your volunteer number or try using your email address.`
         setMessage({ type: 'error', text: errorMsg })
+        setVolunteer(null)
+        setAssignments([])
+        return
+      }
+
+      // Check if volunteer is active
+      if (volunteerData.status !== 'active') {
+        setMessage({ type: 'error', text: `Volunteer account is ${volunteerData.status}. Please contact the administrator.` })
+        setVolunteer(null)
+        setAssignments([])
+        return
+      }
+
+      // If volunteer number lookup but no number in database, suggest using email
+      if (lookupMethod === "number" && !volunteerData.volunteer_number) {
+        setMessage({ type: 'error', text: 'Volunteer number not found. This account may not have been assigned a volunteer number yet. Please try using your email address instead.' })
         setVolunteer(null)
         setAssignments([])
         return
@@ -97,10 +115,10 @@ export default function KioskPage() {
         .from('volunteer_assignments')
         .select(`
           *,
-          volunteers:profiles(id, first_name, last_name, email, phone),
-          shifts(
+          profiles!volunteer_id(id, first_name, last_name, email, phone),
+          shifts!shift_id(
             *,
-            events(*)
+            events!event_id(*)
           )
         `)
         .eq('volunteer_id', volunteerData.id)

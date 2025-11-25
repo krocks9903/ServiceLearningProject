@@ -348,7 +348,7 @@ export default function AdminVolunteersPage() {
           try {
             const { data: assignmentsData } = await supabase
               .from('volunteer_assignments')
-              .select('created_at, shifts(events(id))')
+              .select('created_at, shifts!shift_id(events!event_id(id))')
               .eq('volunteer_id', volunteer.id)
 
             if (assignmentsData) {
