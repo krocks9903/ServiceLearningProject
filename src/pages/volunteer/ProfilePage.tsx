@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { supabase } from "../services/supabaseClient"
-import { useAuth } from "../hooks/useAuth.tsx"
+import { supabase } from "../../services/supabaseClient"
+import { useAuth } from "../../hooks/useAuth.tsx"
 import { useNavigate } from "react-router-dom"
-import { theme } from "../theme"
+import { theme } from "../../constants/theme"
 
 interface Profile {
   id: string

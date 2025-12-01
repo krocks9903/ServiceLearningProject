@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useAuth } from "../../hooks/useAuth.tsx"
-import { theme } from "../../theme"
+import { theme } from "../../constants/theme"
 
 export default function Navbar() {
   const { user, isAdmin, signOut } = useAuth()

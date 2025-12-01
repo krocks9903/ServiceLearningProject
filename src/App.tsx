@@ -1,23 +1,23 @@
 import { Routes, Route, Link } from "react-router-dom"
 import Navbar from "./components/shared/Navbar"
-import LoginPage from "./pages/LoginPage"
-import SignupPage from "./pages/SignupPage"
-import Home from "./pages/Home" // your Supabase test page
-import ProfilePage from "./pages/ProfilePage"
-import EventsPage from "./pages/EventsPage"
-import DashboardPage from "./pages/DashboardPage"
-import AdminPage from "./pages/AdminPage"
-import ReportsPage from "./pages/ReportsPage"
+import LoginPage from "./pages/auth/LoginPage"
+import SignupPage from "./pages/auth/SignupPage"
+import Home from "./pages/volunteer/Home" // your Supabase test page
+import ProfilePage from "./pages/volunteer/ProfilePage"
+import EventsPage from "./pages/volunteer/EventsPage"
+import DashboardPage from "./pages/volunteer/DashboardPage"
+import AdminPage from "./pages/admin/AdminPage"
+import ReportsPage from "./pages/reports/ReportsPage"
 // Admin pages
 import AdminLoginPage from "./pages/admin/AdminLoginPage"
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
 import AdminVolunteersPage from "./pages/admin/AdminVolunteersPage"
 import AdminShiftsPage from "./pages/admin/AdminShiftsPage"
 import AdminHoursPage from "./pages/admin/AdminHoursPage"
-import KioskPage from "./pages/KioskPage"
+import KioskPage from "./pages/kiosk/KioskPage"
 import { useAuth } from "./hooks/useAuth"
 import { AdminAuthProvider } from "./hooks/useAdminAuth"
-import { theme } from "./theme"
+import { theme } from "./constants/theme"
 
 function App() {
   const { loading } = useAuth();

@@ -1,0 +1,97 @@
+/* Card Base Styles */
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Card Variants */
+.card-default {
+  border: 1px solid #e0e0e0;
+}
+
+.card-outlined {
+  border: 2px solid #4a90e2;
+}
+
+.card-elevated {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+/* Card Padding */
+.card-padding-none {
+  padding: 0;
+}
+
+.card-padding-sm {
+  padding: 0.75rem;
+}
+
+.card-padding-md {
+  padding: 1.25rem;
+}
+
+.card-padding-lg {
+  padding: 2rem;
+}
+
+/* Card States */
+.card-hoverable:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:active {
+  transform: translateY(0);
+}
+
+/* Card Sections */
+.card-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.card-body {
+  flex: 1;
+}
+
+.card-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: #1a1a1a;
+  }
+  
+  .card-default {
+    border-color: #2a2a2a;
+  }
+  
+  .card-elevated {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .card-hoverable:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  
+  .card-header,
+  .card-footer {
+    border-color: #2a2a2a;
+  }
+}

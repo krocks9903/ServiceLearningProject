@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "../../services/supabaseClient"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
-import { theme } from "../../theme"
+import { theme } from "../../constants/theme"
 
 interface HourLog {
   id: string

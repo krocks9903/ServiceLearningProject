@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { Calendar as BigCalendar, momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
-import { theme } from '../../theme'
+import { theme } from '../../constants/theme'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 const localizer = momentLocalizer(moment)
@@ -47,7 +47,7 @@ export default function Calendar({
   }
 
   const handleView = (newView: string) => {
-    setView(newView)
+    setView(newView as 'month' | 'week' | 'day' | 'agenda')
   }
 
   const eventStyleGetter = (event: CalendarEvent) => {
@@ -68,7 +68,7 @@ export default function Calendar({
     calendar: {
       height: `${height}px`,
       margin: '20px 0',
-      fontFamily: theme.typography.fontFamily.base,
+      fontFamily: theme.typography.fontFamily,
       '& .rbc-header': {
         backgroundColor: theme.colors.primary,
         color: 'white',

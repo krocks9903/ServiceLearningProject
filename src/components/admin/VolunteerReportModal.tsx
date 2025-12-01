@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../services/supabaseClient'
 import type { VolunteerDetails, VolunteerReport } from '../../types/volunteer'
-import { theme } from '../../theme'
+import { theme } from '../../constants/theme'
 
 interface VolunteerReportModalProps {
   volunteer: VolunteerDetails

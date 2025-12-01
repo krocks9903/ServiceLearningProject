@@ -1,0 +1,166 @@
+/* Base Skeleton Styles */
+.skeleton {
+  background-color: #e0e0e0;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background-color: #2a2a2a;
+  }
+}
+
+/* Pulse Animation */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Wave Animation */
+@keyframes skeleton-wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-wave::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-wave::before {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+  }
+}
+
+/* No Animation */
+.skeleton-none {
+  animation: none;
+}
+
+/* Skeleton Card */
+.skeleton-card {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-card {
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Skeleton List Item */
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-list-item {
+    background: #1a1a1a;
+  }
+}
+
+/* Skeleton Table Row */
+.skeleton-table-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-table-row {
+    background: #1a1a1a;
+    border-bottom-color: #2a2a2a;
+  }
+}
+
+/* Skeleton Text Block */
+.skeleton-text {
+  padding: 1rem;
+}
+
+/* Skeleton Dashboard Card */
+.skeleton-dashboard-card {
+  padding: 1.5rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-dashboard-card {
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Skeleton Event Card */
+.skeleton-event-card {
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-event-card {
+    background: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Skeleton Table */
+.skeleton-table {
+  padding: 1rem;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-table {
+    background: #1a1a1a;
+  }
+}

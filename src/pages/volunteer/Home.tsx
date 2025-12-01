@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
-import { useAuth } from "../hooks/useAuth"
-import { theme } from "../theme"
+import { useAuth } from "../../hooks/useAuth"
+import { theme } from "../../constants/theme"
 
 export default function Home() {
   const { user } = useAuth();

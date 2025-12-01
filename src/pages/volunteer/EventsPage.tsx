@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import { supabase } from "../services/supabaseClient"
-import { useAuth } from "../hooks/useAuth"
-import { theme } from "../theme"
-import EventRegistrationModal from "../components/scheduling/EventRegistrationModal"
-import Calendar from "../components/shared/Calendar"
+import { supabase } from "../../services/supabaseClient"
+import { useAuth } from "../../hooks/useAuth"
+import { theme } from "../../constants/theme"
+import EventRegistrationModal from "../../components/scheduling/EventRegistrationModal"
+import Calendar from "../../components/shared/Calendar"
+import { SkeletonEventCard } from "../../components/shared/Skeleton"
 
 interface Event {
   id: string
@@ -164,30 +165,32 @@ export default function EventsPage() {
   if (loading) {
     return (
       <div style={{ 
-        padding: '4rem', 
-        textAlign: 'center',
+        padding: '2rem', 
         fontFamily: theme.typography.fontFamily,
+        backgroundColor: '#f8f9fa',
+        minHeight: 'calc(100vh - 72px)',
       }}>
-        <div style={{
-          display: 'inline-block',
-          width: '40px',
-          height: '40px',
-          border: `3px solid ${theme.colors.neutral[300]}`,
-          borderTop: `3px solid ${theme.colors.primary}`,
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }}></div>
-        <p style={{ 
-          marginTop: '1rem',
-          color: theme.colors.text.secondary,
-          fontSize: theme.typography.fontSize.sm,
-        }}>Loading events...</p>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* Header Skeleton */}
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ height: '3rem', width: '250px', backgroundColor: '#e0e0e0', borderRadius: '4px', marginBottom: '1rem' }} />
+            <div style={{ height: '1.5rem', width: '400px', backgroundColor: '#e0e0e0', borderRadius: '4px' }} />
+          </div>
+          
+          {/* Events Grid Skeleton */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+            gap: '1.5rem',
+          }}>
+            <SkeletonEventCard />
+            <SkeletonEventCard />
+            <SkeletonEventCard />
+            <SkeletonEventCard />
+            <SkeletonEventCard />
+            <SkeletonEventCard />
+          </div>
+        </div>
       </div>
     )
   }

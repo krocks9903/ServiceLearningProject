@@ -1,4 +1,5 @@
 # Harry Chapin Food Bank - Volunteer Portal
+
 ## Project Structure
 
 Last Updated: December 1, 2025
@@ -128,25 +129,28 @@ ServiceLearningProject/
 ## 🎯 Clean Import Paths with Path Aliases
 
 ### Before (Messy Relative Paths):
+
 ```typescript
-import { useAuth } from "../../../hooks/useAuth"
-import { theme } from "../../../theme"
-import Calendar from "../../../components/shared/Calendar"
-import { supabase } from "../../../services/supabaseClient"
+import { useAuth } from "../../../hooks/useAuth";
+import { theme } from "../../../theme";
+import Calendar from "../../../components/shared/Calendar";
+import { supabase } from "../../../services/supabaseClient";
 ```
 
 ### After (Clean Path Aliases):
+
 ```typescript
-import { useAuth } from "@hooks"
-import { theme } from "@constants"
-import { Calendar } from "@components/shared"
-import { supabase } from "@services"
+import { useAuth } from "@hooks";
+import { theme } from "@constants";
+import { Calendar } from "@components/shared";
+import { supabase } from "@services";
 ```
 
 ### Available Path Aliases:
+
 - `@/*` - Root src folder
 - `@components/*` - Components
-- `@hooks/*` - Custom hooks  
+- `@hooks/*` - Custom hooks
 - `@services/*` - Services/API
 - `@utils/*` - Utilities
 - `@types/*` - TypeScript types
@@ -159,12 +163,12 @@ Each major folder exports everything through `index.ts`:
 
 ```typescript
 // hooks/index.ts
-export { useAuth, AuthProvider } from './useAuth'
-export { useAdminAuth, AdminAuthProvider } from './useAdminAuth'
-export { useSupabase } from './useSupabase'
+export { useAuth, AuthProvider } from "./useAuth";
+export { useAdminAuth, AdminAuthProvider } from "./useAdminAuth";
+export { useSupabase } from "./useSupabase";
 
 // Usage anywhere:
-import { useAuth, useAdminAuth, useSupabase } from '@hooks'
+import { useAuth, useAdminAuth, useSupabase } from "@hooks";
 ```
 
 ---
@@ -172,9 +176,11 @@ import { useAuth, useAdminAuth, useSupabase } from '@hooks'
 ## 🎯 Active Components Breakdown
 
 ### **Navigation (1 component)**
+
 - ✅ `Navbar.tsx` - Professional sticky navigation with active states, user avatar
 
 ### **Pages (9 pages)**
+
 1. ✅ `Home.tsx` - Landing page with hero, stats, and program cards
 2. ✅ `LoginPage.tsx` - User authentication
 3. ✅ `SignupPage.tsx` - Comprehensive volunteer registration form
@@ -186,22 +192,27 @@ import { useAuth, useAdminAuth, useSupabase } from '@hooks'
 9. ✅ `KioskPage.tsx` - Check-in/out kiosk
 
 ### **Hooks (2 hooks)**
+
 1. ✅ `useAuth.tsx` - Authentication, user state, profile management
 2. ✅ `useSupabase.ts` - Supabase helper functions
 
 ### **Services (2 services)**
+
 1. ✅ `supabaseClient.ts` - Supabase initialization and configuration
 2. ✅ `api.ts` - API utilities
 
 ### **Types (2 type files)**
+
 1. ✅ `event.d.ts` - Event-related TypeScript interfaces
 2. ✅ `volunteer.d.ts` - Volunteer-related TypeScript interfaces
 
 ### **Utils (2 utilities)**
+
 1. ✅ `formatDate.ts` - Date formatting functions
 2. ✅ `validations.ts` - Form validation utilities
 
 ### **Core Files (3 files)**
+
 1. ✅ `App.tsx` - Main app component with routing and footer
 2. ✅ `theme.ts` - Professional SaaS design system
 3. ✅ `index.css` - Global styles and CSS variables
@@ -211,6 +222,7 @@ import { useAuth, useAdminAuth, useSupabase } from '@hooks'
 ## 🗑️ Cleaned Up (Empty/Unused Files Removed)
 
 ### Removed Empty Components:
+
 - ❌ `components/auth/LoginForm.tsx` (empty)
 - ❌ `components/auth/SignupForm.tsx` (empty)
 - ❌ `components/dashboard/Dashboard.tsx` (empty)
@@ -220,6 +232,7 @@ import { useAuth, useAdminAuth, useSupabase } from '@hooks'
 - ❌ `components/kiosk/KioskCheckOut.tsx` (unused)
 
 ### Removed Documentation:
+
 - ❌ `IMPLEMENTATION_GUIDE.md` (outdated)
 - ❌ `FEATURES_SUMMARY.md` (outdated)
 - ❌ `QUICK_START.md` (outdated)
@@ -278,6 +291,7 @@ All components follow the professional SaaS design system defined in `theme.ts`:
 ## 🚀 Key Features
 
 ### For Volunteers:
+
 - ✅ Comprehensive registration form (30+ fields)
 - ✅ Personal dashboard
 - ✅ Browse and register for events
@@ -285,6 +299,7 @@ All components follow the professional SaaS design system defined in `theme.ts`:
 - ✅ Check-in/out kiosk
 
 ### For Admins:
+
 - ✅ Admin dashboard
 - ✅ Reports and analytics
 - ✅ Event management
@@ -310,6 +325,7 @@ All components follow the professional SaaS design system defined in `theme.ts`:
 ## 🎯 Next Steps
 
 ### Recommended Enhancements:
+
 1. Add image lazy loading for performance
 2. Implement dark mode toggle
 3. Add skeleton loaders for better UX
@@ -319,6 +335,7 @@ All components follow the professional SaaS design system defined in `theme.ts`:
 7. Add analytics tracking
 
 ### Database Enhancements:
+
 1. Create indexes for common queries
 2. Add database triggers for automation
 3. Implement backup strategy
@@ -339,4 +356,3 @@ All components follow the professional SaaS design system defined in `theme.ts`:
 **Last Cleanup**: 2025-10-02
 **Files Removed**: 14 empty/unused files
 **Active Components**: All working and organized
-

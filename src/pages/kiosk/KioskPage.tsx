@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { supabase } from "../services/supabaseClient"
-import { theme } from "../theme"
+import { supabase } from "../../services/supabaseClient"
+import { theme } from "../../constants/theme"
 
 interface Volunteer {
   id: string

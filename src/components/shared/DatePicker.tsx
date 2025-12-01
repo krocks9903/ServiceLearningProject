@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { theme } from '../../theme'
+import { theme } from '../../constants/theme'
 import Calendar from './Calendar'
 
 interface DatePickerProps {

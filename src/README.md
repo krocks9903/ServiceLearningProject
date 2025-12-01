@@ -6,24 +6,24 @@
 
 ```typescript
 // Hooks
-import { useAuth, useAdminAuth } from '@hooks'
+import { useAuth, useAdminAuth } from "@hooks";
 
 // Components
-import { Navbar, Calendar } from '@components/shared'
-import { ShiftManagementModal } from '@components/admin'
-import { EventRegistrationModal } from '@components/scheduling'
+import { Navbar, Calendar } from "@components/shared";
+import { ShiftManagementModal } from "@components/admin";
+import { EventRegistrationModal } from "@components/scheduling";
 
 // Services
-import { supabase } from '@services'
+import { supabase } from "@services";
 
 // Types
-import type { Event, VolunteerDetails } from '@types'
+import type { Event, VolunteerDetails } from "@types";
 
 // Utils
-import { formatDate, validateEmail } from '@utils'
+import { formatDate, validateEmail } from "@utils";
 
 // Constants
-import { theme } from '@constants'
+import { theme } from "@constants";
 ```
 
 ## Folder Purpose
@@ -55,6 +55,7 @@ import { theme } from '@constants'
 3. Import using path alias: `@folder`
 
 Example:
+
 ```typescript
 // Create: hooks/useMyHook.ts
 export function useMyHook() { ... }

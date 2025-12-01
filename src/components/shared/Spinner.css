@@ -1,0 +1,87 @@
+/* Spinner Base Styles */
+.spinner {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #4a90e2;
+  border-radius: 50%;
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+/* Spinner Sizes */
+.spinner-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+}
+
+.spinner-md {
+  width: 2rem;
+  height: 2rem;
+  border-width: 3px;
+}
+
+.spinner-lg {
+  width: 3rem;
+  height: 3rem;
+  border-width: 4px;
+}
+
+.spinner-xl {
+  width: 4rem;
+  height: 4rem;
+  border-width: 5px;
+}
+
+/* Spinner Animation */
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Screen Reader Only */
+.spinner-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Spinner Overlay */
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner-overlay-message {
+  color: white;
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
-import { supabase } from "../services/supabaseClient"
+import { supabase } from "../../services/supabaseClient"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "../hooks/useAuth"
-import DatePicker from "../components/shared/DatePicker"
-import { theme } from "../theme"
+import { useAuth } from "../../hooks/useAuth"
+import DatePicker from "../../components/shared/DatePicker"
+import { theme } from "../../constants/theme"
 
 export default function SignupPage() {
   const { user, loading: authLoading } = useAuth();

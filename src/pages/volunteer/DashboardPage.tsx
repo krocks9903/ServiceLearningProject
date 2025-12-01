@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "../hooks/useAuth"
-import { theme } from "../theme"
-import { supabase } from "../services/supabaseClient"
-import Calendar from "../components/shared/Calendar"
+import { useAuth } from "../../hooks/useAuth"
+import { theme } from "../../constants/theme"
+import { supabase } from "../../services/supabaseClient"
+import Calendar from "../../components/shared/Calendar"
+import { SkeletonDashboardCard, SkeletonListItem } from "../../components/shared/Skeleton"
 
 export default function DashboardPage() {
   const { user, profile } = useAuth()
@@ -277,19 +278,56 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Loading your dashboard...</p>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}</style>
+      <div style={styles.container}>
+        {/* Hero Skeleton */}
+        <div style={styles.hero}>
+          <div style={{ flex: 1 }}>
+            <div style={{ height: '2rem', width: '60%', backgroundColor: '#e0e0e0', borderRadius: '4px', marginBottom: '0.5rem' }} />
+            <div style={{ height: '1.5rem', width: '80%', backgroundColor: '#e0e0e0', borderRadius: '4px' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ width: '150px', height: '45px', backgroundColor: '#e0e0e0', borderRadius: '8px' }} />
+            <div style={{ width: '150px', height: '45px', backgroundColor: '#e0e0e0', borderRadius: '8px' }} />
+          </div>
+        </div>
+
+        {/* Stats Skeleton */}
+        <div style={styles.statsGrid}>
+          <SkeletonDashboardCard />
+          <SkeletonDashboardCard />
+          <SkeletonDashboardCard />
+          <SkeletonDashboardCard />
+        </div>
+
+        {/* Progress Skeleton */}
+        <div style={styles.progressSection}>
+          <SkeletonDashboardCard />
+          <SkeletonDashboardCard />
+        </div>
+
+        {/* Two Column Skeleton */}
+        <div style={styles.twoColumnGrid}>
+          <div style={styles.card}>
+            <div style={styles.cardHeader}>
+              <div style={{ height: '1.5rem', width: '150px', backgroundColor: '#e0e0e0', borderRadius: '4px' }} />
+            </div>
+            <div style={styles.cardBody}>
+              <SkeletonListItem showAvatar={false} />
+              <SkeletonListItem showAvatar={false} />
+              <SkeletonListItem showAvatar={false} />
+            </div>
+          </div>
+          <div style={styles.card}>
+            <div style={styles.cardHeader}>
+              <div style={{ height: '1.5rem', width: '150px', backgroundColor: '#e0e0e0', borderRadius: '4px' }} />
+            </div>
+            <div style={styles.cardBody}>
+              <SkeletonListItem showAvatar={false} />
+              <SkeletonListItem showAvatar={false} />
+              <SkeletonListItem showAvatar={false} />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

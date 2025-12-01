@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
-import { supabase } from "../services/supabaseClient"
-import { theme } from "../theme"
+import { supabase } from "../../services/supabaseClient"
+import { theme } from "../../constants/theme"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
