@@ -1,50 +1,50 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../../services/supabaseClient"
-import { useAuth } from "../../hooks/useAuth"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { useAuth } from "../../hooks/useAuth";
+import { theme } from "../../constants/theme";
 
 interface Event {
-  id: string
-  title: string
-  description: string
-  location: string
-  start_date: string
-  end_date: string
-  max_volunteers: number | null
-  status: string
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  start_date: string;
+  end_date: string;
+  max_volunteers: number | null;
+  status: string;
 }
 
 interface Shift {
-  id: string
-  event_id: string
-  title: string
-  description: string
-  start_time: string
-  end_time: string
-  capacity: number | null
-  location?: string
+  id: string;
+  event_id: string;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  capacity: number | null;
+  location?: string;
 }
 
 interface EventRegistrationModalProps {
-  event: Event
-  isOpen: boolean
-  onClose: () => void
-  onRegistrationSuccess?: () => void
+  event: Event;
+  isOpen: boolean;
+  onClose: () => void;
+  onRegistrationSuccess?: () => void;
 }
 
-export default function EventRegistrationModal({ 
-  event, 
-  isOpen, 
-  onClose, 
-  onRegistrationSuccess 
+export default function EventRegistrationModal({
+  event,
+  isOpen,
+  onClose,
+  onRegistrationSuccess,
 }: EventRegistrationModalProps) {
-  const { user } = useAuth()
-  const [shifts, setShifts] = useState<Shift[]>([])
-  const [selectedShift, setSelectedShift] = useState<string>("")
-  const [loading, setLoading] = useState(false)
-  const [shiftsLoading, setShiftsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const { user } = useAuth();
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [selectedShift, setSelectedShift] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [shiftsLoading, setShiftsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const styles = {
     overlay: {
@@ -77,7 +77,7 @@ export default function EventRegistrationModal({
       alignItems: "flex-start",
     } as React.CSSProperties,
     title: {
-      fontSize: theme.typography.fontSize['2xl'],
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       margin: 0,
@@ -214,45 +214,45 @@ export default function EventRegistrationModal({
       padding: "2rem",
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
-  }
+  };
 
   const fetchShifts = async () => {
-    setShiftsLoading(true)
+    setShiftsLoading(true);
     try {
       const { data, error } = await supabase
         .from("shifts")
         .select("*")
         .eq("event_id", event.id)
-        .order("start_time")
+        .order("start_time");
 
       if (error) {
-        console.error("Error fetching shifts:", error)
-        setError("Failed to load shifts")
-        return
+        console.error("Error fetching shifts:", error);
+        setError("Failed to load shifts");
+        return;
       }
 
-      setShifts(data || [])
+      setShifts(data || []);
     } catch (error) {
-      console.error("Error fetching shifts:", error)
-      setError("Failed to load shifts")
+      console.error("Error fetching shifts:", error);
+      setError("Failed to load shifts");
     } finally {
-      setShiftsLoading(false)
+      setShiftsLoading(false);
     }
-  }
+  };
 
   const handleRegister = async () => {
     if (!selectedShift) {
-      setError("Please select a shift")
-      return
+      setError("Please select a shift");
+      return;
     }
 
     if (!user) {
-      setError("You must be logged in to register")
-      return
+      setError("You must be logged in to register");
+      return;
     }
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
       // Check if user is already registered for this shift
@@ -261,66 +261,64 @@ export default function EventRegistrationModal({
         .select("id")
         .eq("volunteer_id", user.id)
         .eq("shift_id", selectedShift)
-        .single()
+        .single();
 
       if (existingRegistration) {
-        setError("You are already registered for this shift")
-        setLoading(false)
-        return
+        setError("You are already registered for this shift");
+        setLoading(false);
+        return;
       }
 
       // Register for the shift
-      const { error } = await supabase
-        .from("volunteer_assignments")
-        .insert({
-          volunteer_id: user.id,
-          shift_id: selectedShift,
-          event_id: event.id,
-          status: "registered"
-        })
+      const { error } = await supabase.from("volunteer_assignments").insert({
+        volunteer_id: user.id,
+        shift_id: selectedShift,
+        event_id: event.id,
+        status: "registered",
+      });
 
       if (error) {
-        console.error("Error registering:", error)
-        setError("Failed to register for shift")
-        return
+        console.error("Error registering:", error);
+        setError("Failed to register for shift");
+        return;
       }
 
-      setSuccess("Successfully registered for the shift!")
+      setSuccess("Successfully registered for the shift!");
       setTimeout(() => {
-        onRegistrationSuccess?.()
-        onClose()
-      }, 2000)
+        onRegistrationSuccess?.();
+        onClose();
+      }, 2000);
     } catch (error) {
-      console.error("Error registering:", error)
-      setError("Failed to register for shift")
+      console.error("Error registering:", error);
+      setError("Failed to register for shift");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
-      fetchShifts()
+      fetchShifts();
     }
-  }, [isOpen, event.id])
+  }, [isOpen, event.id]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -337,7 +335,9 @@ export default function EventRegistrationModal({
             <div style={styles.eventTitle}>{event.title}</div>
             <div style={styles.eventDetail}>
               <span style={styles.eventLabel}>Date:</span>
-              <span style={styles.eventValue}>{formatDate(event.start_date)}</span>
+              <span style={styles.eventValue}>
+                {formatDate(event.start_date)}
+              </span>
             </div>
             <div style={styles.eventDetail}>
               <span style={styles.eventLabel}>Location:</span>
@@ -351,49 +351,47 @@ export default function EventRegistrationModal({
             </div>
           </div>
 
-          {error && (
-            <div style={styles.error}>
-              {error}
-            </div>
-          )}
+          {error && <div style={styles.error}>{error}</div>}
 
-          {success && (
-            <div style={styles.success}>
-              {success}
-            </div>
-          )}
+          {success && <div style={styles.success}>{success}</div>}
 
           <div style={styles.shiftSection}>
             <h3 style={styles.shiftTitle}>Available Shifts</h3>
-            
+
             {shiftsLoading ? (
               <div style={styles.loading}>Loading shifts...</div>
             ) : shifts.length === 0 ? (
-              <div style={styles.loading}>No shifts available for this event.</div>
+              <div style={styles.loading}>
+                No shifts available for this event.
+              </div>
             ) : (
               shifts.map((shift) => (
                 <div
                   key={shift.id}
                   style={{
                     ...styles.shiftCard,
-                    ...(selectedShift === shift.id ? styles.shiftCardSelected : {})
+                    ...(selectedShift === shift.id
+                      ? styles.shiftCardSelected
+                      : {}),
                   }}
                   onClick={() => setSelectedShift(shift.id)}
                 >
                   <div style={styles.shiftHeader}>
                     <div style={styles.shiftName}>{shift.title}</div>
                     <div style={styles.shiftTime}>
-                      {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
+                      {formatTime(shift.start_time)} -{" "}
+                      {formatTime(shift.end_time)}
                     </div>
                   </div>
                   {shift.description && (
-                    <div style={styles.shiftDescription}>{shift.description}</div>
+                    <div style={styles.shiftDescription}>
+                      {shift.description}
+                    </div>
                   )}
                   <div style={styles.shiftCapacity}>
-                    {shift.max_volunteers 
+                    {shift.max_volunteers
                       ? `Capacity: ${shift.max_volunteers} volunteers`
-                      : "Unlimited capacity"
-                    }
+                      : "Unlimited capacity"}
                   </div>
                 </div>
               ))
@@ -404,7 +402,7 @@ export default function EventRegistrationModal({
             <button
               style={{
                 ...styles.button,
-                ...styles.secondaryButton
+                ...styles.secondaryButton,
               }}
               onClick={onClose}
               disabled={loading}
@@ -414,18 +412,18 @@ export default function EventRegistrationModal({
             <button
               style={{
                 ...styles.button,
-                ...(loading ? styles.disabledButton : styles.primaryButton)
+                ...(loading ? styles.disabledButton : styles.primaryButton),
               }}
               onClick={handleRegister}
               disabled={loading || !selectedShift}
               onMouseEnter={(e) => {
                 if (!loading && selectedShift) {
-                  e.currentTarget.style.backgroundColor = '#c72e3a'
+                  e.currentTarget.style.backgroundColor = "#c72e3a";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loading && selectedShift) {
-                  e.currentTarget.style.backgroundColor = theme.colors.primary
+                  e.currentTarget.style.backgroundColor = theme.colors.primary;
                 }
               }}
             >
@@ -435,5 +433,5 @@ export default function EventRegistrationModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,24 +1,24 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "../../services/supabaseClient"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { theme } from "../../constants/theme";
 
 interface AdminStats {
-  total_volunteers: number
-  active_volunteers: number
-  pending_volunteers: number
-  total_events: number
-  upcoming_events: number
-  total_hours: number
+  total_volunteers: number;
+  active_volunteers: number;
+  pending_volunteers: number;
+  total_events: number;
+  upcoming_events: number;
+  total_hours: number;
 }
 
 export default function AdminDashboardPage() {
-  const { user, profile, isAdmin, signOut } = useAdminAuth()
-  const navigate = useNavigate()
-  const [stats, setStats] = useState<AdminStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { user, profile, isAdmin, signOut } = useAdminAuth();
+  const navigate = useNavigate();
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Define styles at the top to avoid hoisting issues
   const styles = {
@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
       marginBottom: "2rem",
     } as React.CSSProperties,
     welcomeTitle: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.5rem",
@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
       letterSpacing: "0.5px",
     } as React.CSSProperties,
     statValue: {
-      fontSize: theme.typography.fontSize['4xl'],
+      fontSize: theme.typography.fontSize["4xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.25rem",
@@ -178,41 +178,65 @@ export default function AdminDashboardPage() {
       height: "40px",
       animation: "spin 1s linear infinite",
     } as React.CSSProperties,
-  }
+  };
 
   useEffect(() => {
     if (!user || !isAdmin) {
-      navigate("/admin/login")
-      return
+      navigate("/admin/login");
+      return;
     }
-    fetchStats()
-  }, [user, isAdmin, navigate])
+    fetchStats();
+  }, [user, isAdmin, navigate]);
 
   const fetchStats = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       // Fetch all stats in parallel with individual error handling
       const results = await Promise.allSettled([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer').eq('status', 'active'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'volunteer').eq('status', 'pending'),
-        supabase.from('events').select('*', { count: 'exact', head: true }),
-        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'active').gte('end_date', new Date().toISOString()),
-        supabase.from('hour_logs').select('hours')
-      ])
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("role", "volunteer"),
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("role", "volunteer")
+          .eq("status", "active"),
+        supabase
+          .from("profiles")
+          .select("*", { count: "exact", head: true })
+          .eq("role", "volunteer")
+          .eq("status", "pending"),
+        supabase.from("events").select("*", { count: "exact", head: true }),
+        supabase
+          .from("events")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "active")
+          .gte("end_date", new Date().toISOString()),
+        supabase.from("hour_logs").select("hours"),
+      ]);
 
       // Extract counts and data, handling failures gracefully
-      const totalVolunteers = results[0].status === 'fulfilled' ? (results[0].value.count || 0) : 0
-      const activeVolunteers = results[1].status === 'fulfilled' ? (results[1].value.count || 0) : 0
-      const pendingVolunteers = results[2].status === 'fulfilled' ? (results[2].value.count || 0) : 0
-      const totalEvents = results[3].status === 'fulfilled' ? (results[3].value.count || 0) : 0
-      const upcomingEvents = results[4].status === 'fulfilled' ? (results[4].value.count || 0) : 0
-      const hourLogs = results[5].status === 'fulfilled' ? (results[5].value.data || []) : []
+      const totalVolunteers =
+        results[0].status === "fulfilled" ? results[0].value.count || 0 : 0;
+      const activeVolunteers =
+        results[1].status === "fulfilled" ? results[1].value.count || 0 : 0;
+      const pendingVolunteers =
+        results[2].status === "fulfilled" ? results[2].value.count || 0 : 0;
+      const totalEvents =
+        results[3].status === "fulfilled" ? results[3].value.count || 0 : 0;
+      const upcomingEvents =
+        results[4].status === "fulfilled" ? results[4].value.count || 0 : 0;
+      const hourLogs =
+        results[5].status === "fulfilled" ? results[5].value.data || [] : [];
 
       // Calculate total hours
-      const totalHours = hourLogs.reduce((sum, log) => sum + (Number(log.hours) || 0), 0)
+      const totalHours = hourLogs.reduce(
+        (sum, log) => sum + (Number(log.hours) || 0),
+        0
+      );
 
       setStats({
         total_volunteers: totalVolunteers,
@@ -220,28 +244,30 @@ export default function AdminDashboardPage() {
         pending_volunteers: pendingVolunteers,
         total_events: totalEvents,
         upcoming_events: upcomingEvents,
-        total_hours: Math.round(totalHours * 10) / 10 // Round to 1 decimal place
-      })
+        total_hours: Math.round(totalHours * 10) / 10, // Round to 1 decimal place
+      });
     } catch (error) {
-      console.error('Error fetching stats:', error)
-      setError('Failed to load dashboard data')
+      console.error("Error fetching stats:", error);
+      setError("Failed to load dashboard data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
-    await signOut()
-    navigate("/admin/login")
-  }
+    await signOut();
+    navigate("/admin/login");
+  };
 
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
-        <p style={{ color: theme.colors.text.secondary }}>Loading dashboard...</p>
+        <p style={{ color: theme.colors.text.secondary }}>
+          Loading dashboard...
+        </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -254,18 +280,18 @@ export default function AdminDashboardPage() {
         </div>
         <div style={styles.headerRight}>
           <span style={styles.userInfo}>
-            Welcome, {profile?.first_name || 'Admin'}
+            Welcome, {profile?.first_name || "Admin"}
           </span>
           <button
             onClick={handleLogout}
             style={styles.logoutButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.white
-              e.currentTarget.style.color = theme.colors.secondary
+              e.currentTarget.style.backgroundColor = theme.colors.white;
+              e.currentTarget.style.color = theme.colors.secondary;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = theme.colors.white
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = theme.colors.white;
             }}
           >
             Logout
@@ -281,11 +307,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
 
-        {error && (
-          <div style={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div style={styles.error}>{error}</div>}
 
         {stats && (
           <div style={styles.statsGrid}>
@@ -293,7 +315,8 @@ export default function AdminDashboardPage() {
               <div style={styles.statTitle}>Total Volunteers</div>
               <div style={styles.statValue}>{stats.total_volunteers}</div>
               <div style={styles.statDescription}>
-                {stats.active_volunteers} active, {stats.pending_volunteers} pending
+                {stats.active_volunteers} active, {stats.pending_volunteers}{" "}
+                pending
               </div>
             </div>
 
@@ -308,75 +331,67 @@ export default function AdminDashboardPage() {
             <div style={styles.statCard}>
               <div style={styles.statTitle}>Total Hours</div>
               <div style={styles.statValue}>{stats.total_hours}</div>
-              <div style={styles.statDescription}>
-                Hours volunteered
-              </div>
+              <div style={styles.statDescription}>Hours volunteered</div>
             </div>
           </div>
         )}
 
         <div style={styles.actionsGrid}>
-          <div 
+          <div
             style={styles.actionCard}
-            onClick={() => navigate('/admin/volunteers')}
+            onClick={() => navigate("/admin/volunteers")}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = theme.shadows.lg
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = theme.shadows.lg;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = theme.shadows.md
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = theme.shadows.md;
             }}
           >
             <h3 style={styles.actionTitle}>Manage Volunteers</h3>
             <p style={styles.actionDescription}>
               View all volunteers, their profiles, hours logged, and status.
             </p>
-            <button style={styles.actionButton}>
-              View Volunteers →
-            </button>
+            <button style={styles.actionButton}>View Volunteers →</button>
           </div>
 
-          <div 
+          <div
             style={styles.actionCard}
-            onClick={() => navigate('/admin/hours')}
+            onClick={() => navigate("/admin/hours")}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = theme.shadows.lg
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = theme.shadows.lg;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = theme.shadows.md
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = theme.shadows.md;
             }}
           >
             <h3 style={styles.actionTitle}>Approve Hours</h3>
             <p style={styles.actionDescription}>
               Review and approve volunteer hour submissions and logs.
             </p>
-            <button style={styles.actionButton}>
-              Manage Hours →
-            </button>
+            <button style={styles.actionButton}>Manage Hours →</button>
           </div>
 
-          <div 
+          <div
             style={styles.actionCard}
-            onClick={() => navigate('/admin/shifts')}
+            onClick={() => navigate("/admin/shifts")}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = theme.shadows.lg
+              e.currentTarget.style.transform = "translateY(-4px)";
+              e.currentTarget.style.boxShadow = theme.shadows.lg;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = theme.shadows.md
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = theme.shadows.md;
             }}
           >
             <h3 style={styles.actionTitle}>Manage Events & Shifts</h3>
             <p style={styles.actionDescription}>
               Create, edit, and manage volunteer events and shifts.
             </p>
-            <button style={styles.actionButton}>
-              Manage Events →
-            </button>
+            <button style={styles.actionButton}>Manage Events →</button>
           </div>
         </div>
       </main>
@@ -388,5 +403,5 @@ export default function AdminDashboardPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }

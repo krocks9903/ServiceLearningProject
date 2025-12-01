@@ -1,56 +1,57 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "../../services/supabaseClient"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
-import { theme } from "../../constants/theme"
-import VolunteerDetailsModal from "../../components/admin/VolunteerDetailsModal"
-import VolunteerReportModal from "../../components/admin/VolunteerReportModal"
-import type { VolunteerDetails } from "../../types/volunteer"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { theme } from "../../constants/theme";
+import VolunteerDetailsModal from "../../components/admin/VolunteerDetailsModal";
+import VolunteerReportModal from "../../components/admin/VolunteerReportModal";
+import type { VolunteerDetails } from "../../types/volunteer";
 
 interface Volunteer {
-  id: string
-  email: string
-  first_name: string
-  last_name: string
-  phone: string
-  status: string
-  created_at: string
-  total_hours: number
-  events_attended: number
-  last_volunteer_date: string | null
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  status: string;
+  created_at: string;
+  total_hours: number;
+  events_attended: number;
+  last_volunteer_date: string | null;
   // Additional comprehensive fields
-  date_of_birth?: string
+  date_of_birth?: string;
   address?: {
-    street?: string
-    city?: string
-    state?: string
-    zip_code?: string
-    country?: string
-  }
-  emergency_contact_name?: string
-  emergency_contact_phone?: string
-  t_shirt_size?: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'
-  skills?: string[]
-  tags?: string[]
-  profile_photo_url?: string
-  updated_at?: string
-  role?: string
-  groups?: string[]
-  verified_hours?: number
-  pending_hours?: number
+    street?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+    country?: string;
+  };
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  t_shirt_size?: "XS" | "S" | "M" | "L" | "XL" | "XXL";
+  skills?: string[];
+  tags?: string[];
+  profile_photo_url?: string;
+  updated_at?: string;
+  role?: string;
+  groups?: string[];
+  verified_hours?: number;
+  pending_hours?: number;
 }
 
 export default function AdminVolunteersPage() {
-  const { user, isAdmin, signOut } = useAdminAuth()
-  const navigate = useNavigate()
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedVolunteer, setSelectedVolunteer] = useState<VolunteerDetails | null>(null)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showReportModal, setShowReportModal] = useState(false)
+  const { user, isAdmin, signOut } = useAdminAuth();
+  const navigate = useNavigate();
+  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedVolunteer, setSelectedVolunteer] =
+    useState<VolunteerDetails | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Define styles at the top to avoid hoisting issues
   const styles = {
@@ -116,7 +117,7 @@ export default function AdminVolunteersPage() {
       marginBottom: "2rem",
     } as React.CSSProperties,
     pageTitle: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.5rem",
@@ -233,51 +234,52 @@ export default function AdminVolunteersPage() {
     actionButton: {
       backgroundColor: theme.colors.primary,
       color: theme.colors.white,
-      border: 'none',
-      padding: '0.5rem 1rem',
+      border: "none",
+      padding: "0.5rem 1rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.sm,
       fontWeight: theme.typography.fontWeight.semibold,
-      cursor: 'pointer',
+      cursor: "pointer",
       transition: theme.transitions.base,
-      marginRight: '0.5rem',
+      marginRight: "0.5rem",
     } as React.CSSProperties,
     secondaryButton: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       color: theme.colors.text.secondary,
       border: `1px solid ${theme.colors.neutral[300]}`,
-      padding: '0.5rem 1rem',
+      padding: "0.5rem 1rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.sm,
       fontWeight: theme.typography.fontWeight.semibold,
-      cursor: 'pointer',
+      cursor: "pointer",
       transition: theme.transitions.base,
     } as React.CSSProperties,
     actionButtons: {
-      display: 'flex',
-      gap: '0.5rem',
-      alignItems: 'center',
+      display: "flex",
+      gap: "0.5rem",
+      alignItems: "center",
     } as React.CSSProperties,
-  }
+  };
 
   useEffect(() => {
     if (!user || !isAdmin) {
-      navigate("/admin/login")
-      return
+      navigate("/admin/login");
+      return;
     }
-    fetchVolunteers()
-  }, [user, isAdmin, navigate])
+    fetchVolunteers();
+  }, [user, isAdmin, navigate]);
 
   const fetchVolunteers = async () => {
     try {
       // Start with the original working query as fallback
-      let data, error
-      
+      let data, error;
+
       // Try the enhanced query first
       try {
         const result = await supabase
-          .from('profiles')
-          .select(`
+          .from("profiles")
+          .select(
+            `
             id,
             email,
             first_name,
@@ -295,194 +297,226 @@ export default function AdminVolunteersPage() {
             profile_photo_url,
             updated_at,
             role
-          `)
-          .order('created_at', { ascending: false })
-        
-        data = result.data
-        error = result.error
+          `
+          )
+          .order("created_at", { ascending: false });
+
+        data = result.data;
+        error = result.error;
       } catch (enhancedError) {
-        console.log('Enhanced query failed, trying basic query:', enhancedError)
+        console.log(
+          "Enhanced query failed, trying basic query:",
+          enhancedError
+        );
         // Fallback to basic query
         const result = await supabase
-          .from('admin_volunteer_summary')
-          .select('*')
-          .order('created_at', { ascending: false })
-        
-        data = result.data
-        error = result.error
+          .from("admin_volunteer_summary")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        data = result.data;
+        error = result.error;
       }
 
       if (error) {
-        console.error('Error fetching volunteers:', error)
-        setError('Failed to load volunteers')
-        return
+        console.error("Error fetching volunteers:", error);
+        setError("Failed to load volunteers");
+        return;
       }
 
       // Transform the data to include calculated fields
-      const transformedData = await Promise.all((data || []).map(async (volunteer) => {
-        // Initialize with basic data
-        let totalHours = volunteer.total_hours || 0
-        let eventsAttended = volunteer.events_attended || 0
-        let lastVolunteerDate = volunteer.last_volunteer_date || null
-        let verifiedHours = 0
-        let groups: string[] = []
+      const transformedData = await Promise.all(
+        (data || []).map(async (volunteer) => {
+          // Initialize with basic data
+          let totalHours = volunteer.total_hours || 0;
+          let eventsAttended = volunteer.events_attended || 0;
+          let lastVolunteerDate = volunteer.last_volunteer_date || null;
+          let verifiedHours = 0;
+          let groups: string[] = [];
 
-        // Try to get additional data if not already present
-        if (!volunteer.total_hours) {
-          try {
-            const { data: hourLogsData } = await supabase
-              .from('hour_logs')
-              .select('hours, verified_at')
-              .eq('volunteer_id', volunteer.id)
+          // Try to get additional data if not already present
+          if (!volunteer.total_hours) {
+            try {
+              const { data: hourLogsData } = await supabase
+                .from("hour_logs")
+                .select("hours, verified_at")
+                .eq("volunteer_id", volunteer.id);
 
-            if (hourLogsData) {
-              totalHours = hourLogsData.reduce((sum, log) => sum + (log.hours || 0), 0)
-              verifiedHours = hourLogsData.filter(log => log.verified_at).reduce((sum, log) => sum + (log.hours || 0), 0)
+              if (hourLogsData) {
+                totalHours = hourLogsData.reduce(
+                  (sum, log) => sum + (log.hours || 0),
+                  0
+                );
+                verifiedHours = hourLogsData
+                  .filter((log) => log.verified_at)
+                  .reduce((sum, log) => sum + (log.hours || 0), 0);
+              }
+            } catch (hourError) {
+              console.log("Error fetching hour logs:", hourError);
             }
-          } catch (hourError) {
-            console.log('Error fetching hour logs:', hourError)
           }
-        }
 
-        if (!volunteer.events_attended) {
-          try {
-            const { data: assignmentsData } = await supabase
-              .from('volunteer_assignments')
-              .select('created_at, shifts!shift_id(events!event_id(id))')
-              .eq('volunteer_id', volunteer.id)
+          if (!volunteer.events_attended) {
+            try {
+              const { data: assignmentsData } = await supabase
+                .from("volunteer_assignments")
+                .select("created_at, shifts!shift_id(events!event_id(id))")
+                .eq("volunteer_id", volunteer.id);
 
-            if (assignmentsData) {
-              eventsAttended = new Set(assignmentsData.map((assignment: any) => assignment.shifts?.events?.id).filter(Boolean)).size
-              const sortedAssignments = assignmentsData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-              lastVolunteerDate = sortedAssignments[0]?.created_at || null
+              if (assignmentsData) {
+                eventsAttended = new Set(
+                  assignmentsData
+                    .map((assignment: any) => assignment.shifts?.events?.id)
+                    .filter(Boolean)
+                ).size;
+                const sortedAssignments = assignmentsData.sort(
+                  (a, b) =>
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                );
+                lastVolunteerDate = sortedAssignments[0]?.created_at || null;
+              }
+            } catch (assignmentError) {
+              console.log("Error fetching assignments:", assignmentError);
             }
-          } catch (assignmentError) {
-            console.log('Error fetching assignments:', assignmentError)
           }
-        }
 
-        // Try to get volunteer groups
-        try {
-          const { data: groupMemberships } = await supabase
-            .from('volunteer_group_memberships')
-            .select('volunteer_groups(name)')
-            .eq('volunteer_id', volunteer.id)
-          
-          if (groupMemberships) {
-            groups = groupMemberships.map((membership: any) => membership.volunteer_groups?.name).filter(Boolean) as string[]
+          // Try to get volunteer groups
+          try {
+            const { data: groupMemberships } = await supabase
+              .from("volunteer_group_memberships")
+              .select("volunteer_groups(name)")
+              .eq("volunteer_id", volunteer.id);
+
+            if (groupMemberships) {
+              groups = groupMemberships
+                .map((membership: any) => membership.volunteer_groups?.name)
+                .filter(Boolean) as string[];
+            }
+          } catch (groupError) {
+            console.log("Error fetching volunteer groups:", groupError);
           }
-        } catch (groupError) {
-          console.log('Error fetching volunteer groups:', groupError)
-        }
 
-        return {
-          ...volunteer,
-          total_hours: totalHours,
-          events_attended: eventsAttended,
-          last_volunteer_date: lastVolunteerDate,
-          verified_hours: verifiedHours,
-          pending_hours: totalHours - verifiedHours,
-          groups: groups,
-          // Ensure all fields have default values
-          date_of_birth: volunteer.date_of_birth || null,
-          address: volunteer.address || null,
-          emergency_contact_name: volunteer.emergency_contact_name || null,
-          emergency_contact_phone: volunteer.emergency_contact_phone || null,
-          t_shirt_size: volunteer.t_shirt_size || null,
-          skills: volunteer.skills || [],
-          tags: volunteer.tags || [],
-          profile_photo_url: volunteer.profile_photo_url || null,
-          updated_at: volunteer.updated_at || volunteer.created_at,
-          role: volunteer.role || 'volunteer'
-        }
-      }))
+          return {
+            ...volunteer,
+            total_hours: totalHours,
+            events_attended: eventsAttended,
+            last_volunteer_date: lastVolunteerDate,
+            verified_hours: verifiedHours,
+            pending_hours: totalHours - verifiedHours,
+            groups: groups,
+            // Ensure all fields have default values
+            date_of_birth: volunteer.date_of_birth || null,
+            address: volunteer.address || null,
+            emergency_contact_name: volunteer.emergency_contact_name || null,
+            emergency_contact_phone: volunteer.emergency_contact_phone || null,
+            t_shirt_size: volunteer.t_shirt_size || null,
+            skills: volunteer.skills || [],
+            tags: volunteer.tags || [],
+            profile_photo_url: volunteer.profile_photo_url || null,
+            updated_at: volunteer.updated_at || volunteer.created_at,
+            role: volunteer.role || "volunteer",
+          };
+        })
+      );
 
-      setVolunteers(transformedData)
+      setVolunteers(transformedData);
     } catch (error) {
-      console.error('Error fetching volunteers:', error)
-      setError('Failed to load volunteers')
+      console.error("Error fetching volunteers:", error);
+      setError("Failed to load volunteers");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
-    await signOut()
-    navigate("/admin/login")
-  }
+    await signOut();
+    navigate("/admin/login");
+  };
 
   const handleViewDetails = (volunteer: Volunteer) => {
-    setSelectedVolunteer(volunteer as VolunteerDetails)
-    setShowDetailsModal(true)
-  }
+    setSelectedVolunteer(volunteer as VolunteerDetails);
+    setShowDetailsModal(true);
+  };
 
   const handleGenerateReport = (volunteer: VolunteerDetails) => {
-    setSelectedVolunteer(volunteer)
-    setShowDetailsModal(false)
-    setShowReportModal(true)
-  }
+    setSelectedVolunteer(volunteer);
+    setShowDetailsModal(false);
+    setShowReportModal(true);
+  };
 
   const handleCloseDetails = () => {
-    setShowDetailsModal(false)
-    setSelectedVolunteer(null)
-  }
+    setShowDetailsModal(false);
+    setSelectedVolunteer(null);
+  };
 
   const handleCloseReport = () => {
-    setShowReportModal(false)
-    setSelectedVolunteer(null)
-  }
+    setShowReportModal(false);
+    setSelectedVolunteer(null);
+  };
 
   const handleStatusUpdate = (volunteerId: string, newStatus: string) => {
     // Update the volunteer status in the local state
-    setVolunteers(prevVolunteers => 
-      prevVolunteers.map(volunteer => 
-        volunteer.id === volunteerId 
-          ? { ...volunteer, status: newStatus, updated_at: new Date().toISOString() }
+    setVolunteers((prevVolunteers) =>
+      prevVolunteers.map((volunteer) =>
+        volunteer.id === volunteerId
+          ? {
+              ...volunteer,
+              status: newStatus,
+              updated_at: new Date().toISOString(),
+            }
           : volunteer
       )
-    )
-  }
+    );
+  };
 
-  const filteredVolunteers = volunteers.filter(volunteer => {
-    const matchesSearch = 
+  const filteredVolunteers = volunteers.filter((volunteer) => {
+    const matchesSearch =
       volunteer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       volunteer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      volunteer.email.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesStatus = statusFilter === "all" || volunteer.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
+      volunteer.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || volunteer.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return theme.colors.success
-      case 'pending': return theme.colors.warning
-      case 'inactive': return theme.colors.error
-      default: return theme.colors.text.secondary
+      case "active":
+        return theme.colors.success;
+      case "pending":
+        return theme.colors.warning;
+      case "inactive":
+        return theme.colors.error;
+      default:
+        return theme.colors.text.secondary;
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
-    const color = getStatusColor(status)
+    const color = getStatusColor(status);
     return {
       backgroundColor: `${color}20`,
       color: color,
-      padding: '0.25rem 0.75rem',
+      padding: "0.25rem 0.75rem",
       borderRadius: theme.borderRadius.full,
       fontSize: theme.typography.fontSize.xs,
       fontWeight: theme.typography.fontWeight.semibold,
-      textTransform: 'uppercase' as const,
-    }
-  }
+      textTransform: "uppercase" as const,
+    };
+  };
 
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
-        <p style={{ color: theme.colors.text.secondary }}>Loading volunteers...</p>
+        <p style={{ color: theme.colors.text.secondary }}>
+          Loading volunteers...
+        </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -495,15 +529,15 @@ export default function AdminVolunteersPage() {
         </div>
         <div style={styles.headerRight}>
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate("/admin/dashboard")}
             style={styles.backButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.white
-              e.currentTarget.style.color = theme.colors.secondary
+              e.currentTarget.style.backgroundColor = theme.colors.white;
+              e.currentTarget.style.color = theme.colors.secondary;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = theme.colors.white
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = theme.colors.white;
             }}
           >
             ← Dashboard
@@ -512,12 +546,12 @@ export default function AdminVolunteersPage() {
             onClick={handleLogout}
             style={styles.logoutButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.white
-              e.currentTarget.style.color = theme.colors.secondary
+              e.currentTarget.style.backgroundColor = theme.colors.white;
+              e.currentTarget.style.color = theme.colors.secondary;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = theme.colors.white
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = theme.colors.white;
             }}
           >
             Logout
@@ -533,11 +567,7 @@ export default function AdminVolunteersPage() {
           </p>
         </div>
 
-        {error && (
-          <div style={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div style={styles.error}>{error}</div>}
 
         <div style={styles.filters}>
           <input
@@ -586,50 +616,66 @@ export default function AdminVolunteersPage() {
                     <div style={styles.volunteerPhone}>{volunteer.phone}</div>
                   )}
                   {volunteer.groups && volunteer.groups.length > 0 && (
-                    <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.secondary }}>
-                      Groups: {volunteer.groups.join(', ')}
+                    <div
+                      style={{
+                        fontSize: theme.typography.fontSize.xs,
+                        color: theme.colors.text.secondary,
+                      }}
+                    >
+                      Groups: {volunteer.groups.join(", ")}
                     </div>
                   )}
                 </div>
-                
+
                 <div>
                   <span style={getStatusBadge(volunteer.status)}>
                     {volunteer.status}
                   </span>
                 </div>
-                
+
                 <div>
                   <div style={styles.statValue}>{volunteer.total_hours}</div>
                   <div style={styles.statLabel}>hours</div>
-                  {volunteer.verified_hours !== undefined && volunteer.pending_hours !== undefined && (
-                    <div style={{ fontSize: theme.typography.fontSize.xs, color: theme.colors.text.secondary }}>
-                      {volunteer.verified_hours} verified, {volunteer.pending_hours} pending
-                    </div>
-                  )}
+                  {volunteer.verified_hours !== undefined &&
+                    volunteer.pending_hours !== undefined && (
+                      <div
+                        style={{
+                          fontSize: theme.typography.fontSize.xs,
+                          color: theme.colors.text.secondary,
+                        }}
+                      >
+                        {volunteer.verified_hours} verified,{" "}
+                        {volunteer.pending_hours} pending
+                      </div>
+                    )}
                 </div>
-                
-                <div>
-                  <div style={styles.statValue}>{volunteer.events_attended}</div>
-                  <div style={styles.statLabel}>events</div>
-                </div>
-                
+
                 <div>
                   <div style={styles.statValue}>
-                    {volunteer.last_volunteer_date 
-                      ? new Date(volunteer.last_volunteer_date).toLocaleDateString()
-                      : 'Never'
-                    }
+                    {volunteer.events_attended}
+                  </div>
+                  <div style={styles.statLabel}>events</div>
+                </div>
+
+                <div>
+                  <div style={styles.statValue}>
+                    {volunteer.last_volunteer_date
+                      ? new Date(
+                          volunteer.last_volunteer_date
+                        ).toLocaleDateString()
+                      : "Never"}
                   </div>
                   <div style={styles.statLabel}>
-                    {volunteer.last_volunteer_date 
-                      ? 'last volunteer'
-                      : 'no activity'
-                    }
+                    {volunteer.last_volunteer_date
+                      ? "last volunteer"
+                      : "no activity"}
                   </div>
                 </div>
 
                 <div>
-                  <div style={styles.statValue}>{volunteer.t_shirt_size || 'N/A'}</div>
+                  <div style={styles.statValue}>
+                    {volunteer.t_shirt_size || "N/A"}
+                  </div>
                   <div style={styles.statLabel}>size</div>
                 </div>
 
@@ -638,10 +684,12 @@ export default function AdminVolunteersPage() {
                     style={styles.actionButton}
                     onClick={() => handleViewDetails(volunteer)}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = theme.colors.secondary
+                      e.currentTarget.style.backgroundColor =
+                        theme.colors.secondary;
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = theme.colors.primary
+                      e.currentTarget.style.backgroundColor =
+                        theme.colors.primary;
                     }}
                   >
                     View Details
@@ -678,5 +726,5 @@ export default function AdminVolunteersPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }

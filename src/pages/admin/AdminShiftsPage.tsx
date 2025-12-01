@@ -1,47 +1,47 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "../../services/supabaseClient"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
-import { theme } from "../../constants/theme"
-import ShiftManagementModal from "../../components/admin/ShiftManagementModal"
-import DatePicker from "../../components/shared/DatePicker"
-import VolunteerAssignmentsModal from "../../components/admin/VolunteerAssignmentsModal"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { theme } from "../../constants/theme";
+import ShiftManagementModal from "../../components/admin/ShiftManagementModal";
+import { DatePicker } from "../../components/shared";
+import VolunteerAssignmentsModal from "../../components/admin/VolunteerAssignmentsModal";
 
 interface Event {
-  id: string
-  title: string
-  description: string
-  location: string
-  start_date: string
-  end_date: string
-  max_volunteers: number | null
-  status: string
-  created_at: string
-  volunteer_count?: number
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  start_date: string;
+  end_date: string;
+  max_volunteers: number | null;
+  status: string;
+  created_at: string;
+  volunteer_count?: number;
 }
 
 export default function AdminShiftsPage() {
-  const { user, isAdmin, signOut } = useAdminAuth()
-  const navigate = useNavigate()
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [showShiftModal, setShowShiftModal] = useState(false)
-  const [showAssignmentsModal, setShowAssignmentsModal] = useState(false)
+  const { user, isAdmin, signOut } = useAdminAuth();
+  const navigate = useNavigate();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [showAssignmentsModal, setShowAssignmentsModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    location: '',
-    start_date: '',
-    end_date: '',
-    max_volunteers: '',
+    title: "",
+    description: "",
+    location: "",
+    start_date: "",
+    end_date: "",
+    max_volunteers: "",
     is_private: false,
-  })
+  });
 
   // Define styles at the top to avoid hoisting issues
   const styles = {
@@ -110,7 +110,7 @@ export default function AdminShiftsPage() {
       marginBottom: "2rem",
     } as React.CSSProperties,
     pageTitle: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.5rem",
@@ -304,215 +304,230 @@ export default function AdminShiftsPage() {
       height: "40px",
       animation: "spin 1s linear infinite",
     } as React.CSSProperties,
-  }
+  };
 
   useEffect(() => {
     if (!user || !isAdmin) {
-      navigate("/admin/login")
-      return
+      navigate("/admin/login");
+      return;
     }
-    fetchEvents()
-  }, [user, isAdmin, navigate])
+    fetchEvents();
+  }, [user, isAdmin, navigate]);
 
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('start_date', { ascending: false })
+        .from("events")
+        .select("*")
+        .order("start_date", { ascending: false });
 
       if (error) {
-        console.error('Error fetching events:', error)
-        setError('Failed to load events')
-        return
+        console.error("Error fetching events:", error);
+        setError("Failed to load events");
+        return;
       }
 
       // Fetch volunteer count for each event
       const eventsWithCount = await Promise.all(
         (data || []).map(async (event) => {
           const { count, error: countError } = await supabase
-            .from('volunteer_assignments')
-            .select('*', { count: 'exact', head: true })
-            .eq('event_id', event.id)
+            .from("volunteer_assignments")
+            .select("*", { count: "exact", head: true })
+            .eq("event_id", event.id);
 
           if (countError) {
-            console.error('Error counting assignments:', countError)
+            console.error("Error counting assignments:", countError);
           }
 
           return {
             ...event,
-            volunteer_count: count || 0
-          }
+            volunteer_count: count || 0,
+          };
         })
-      )
+      );
 
-      setEvents(eventsWithCount)
+      setEvents(eventsWithCount);
     } catch (error) {
-      console.error('Error fetching events:', error)
-      setError('Failed to load events')
+      console.error("Error fetching events:", error);
+      setError("Failed to load events");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       const { data: newEvent, error } = await supabase
-        .from('events')
+        .from("events")
         .insert({
           title: formData.title,
           description: formData.description,
           location: formData.location,
           start_date: formData.start_date,
           end_date: formData.end_date,
-          max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
+          max_volunteers: formData.max_volunteers
+            ? parseInt(formData.max_volunteers)
+            : null,
           is_private: formData.is_private,
-          status: 'active'
+          status: "active",
         })
         .select()
-        .single()
+        .single();
 
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
 
-      setShowCreateForm(false)
+      setShowCreateForm(false);
       setFormData({
-        title: '',
-        description: '',
-        location: '',
-        start_date: '',
-        end_date: '',
-        max_volunteers: '',
+        title: "",
+        description: "",
+        location: "",
+        start_date: "",
+        end_date: "",
+        max_volunteers: "",
         is_private: false,
-      })
-      fetchEvents()
+      });
+      fetchEvents();
     } catch (error) {
-      setError('Failed to create event')
-      console.error('Error creating event:', error)
+      setError("Failed to create event");
+      console.error("Error creating event:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEditEvent = (event: Event) => {
-    setEditingEvent(event)
+    setEditingEvent(event);
     setFormData({
       title: event.title,
       description: event.description,
       location: event.location,
       start_date: event.start_date.substring(0, 16), // Format for datetime-local input
       end_date: event.end_date.substring(0, 16),
-      max_volunteers: event.max_volunteers?.toString() || '',
+      max_volunteers: event.max_volunteers?.toString() || "",
       is_private: (event as any).is_private || false,
-    })
-    setShowCreateForm(true)
-  }
+    });
+    setShowCreateForm(true);
+  };
 
   const handleUpdateEvent = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      if (!editingEvent) return
+      if (!editingEvent) return;
 
       const { error } = await supabase
-        .from('events')
+        .from("events")
         .update({
           title: formData.title,
           description: formData.description,
           location: formData.location,
           start_date: formData.start_date,
           end_date: formData.end_date,
-          max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
+          max_volunteers: formData.max_volunteers
+            ? parseInt(formData.max_volunteers)
+            : null,
           is_private: formData.is_private,
         })
-        .eq('id', editingEvent.id)
+        .eq("id", editingEvent.id);
 
       if (error) {
-        setError(error.message)
-        return
+        setError(error.message);
+        return;
       }
 
-      setShowCreateForm(false)
-      setEditingEvent(null)
+      setShowCreateForm(false);
+      setEditingEvent(null);
       setFormData({
-        title: '',
-        description: '',
-        location: '',
-        start_date: '',
-        end_date: '',
-        max_volunteers: '',
+        title: "",
+        description: "",
+        location: "",
+        start_date: "",
+        end_date: "",
+        max_volunteers: "",
         is_private: false,
-      })
-      fetchEvents()
+      });
+      fetchEvents();
     } catch (error) {
-      setError('Failed to update event')
-      console.error('Error updating event:', error)
+      setError("Failed to update event");
+      console.error("Error updating event:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event? This will also delete all associated shifts and volunteer assignments.')) return
+    if (
+      !confirm(
+        "Are you sure you want to delete this event? This will also delete all associated shifts and volunteer assignments."
+      )
+    )
+      return;
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
       const { error, data } = await supabase
-        .from('events')
+        .from("events")
         .delete()
-        .eq('id', eventId)
-        .select()
+        .eq("id", eventId)
+        .select();
 
       if (error) {
-        console.error('Delete error:', error)
-        setError(`Failed to delete event: ${error.message}. ${error.details || ''}`)
-        setLoading(false)
-        return
+        console.error("Delete error:", error);
+        setError(
+          `Failed to delete event: ${error.message}. ${error.details || ""}`
+        );
+        setLoading(false);
+        return;
       }
 
       // Success - refresh the events list
-      await fetchEvents()
-      setError(null)
+      await fetchEvents();
+      setError(null);
     } catch (error: any) {
-      console.error('Error deleting event:', error)
-      setError(`Failed to delete event: ${error?.message || 'Unknown error'}`)
+      console.error("Error deleting event:", error);
+      setError(`Failed to delete event: ${error?.message || "Unknown error"}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
-    await signOut()
-    navigate("/admin/login")
-  }
+    await signOut();
+    navigate("/admin/login");
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return theme.colors.success
-      case 'cancelled': return theme.colors.error
-      case 'completed': return theme.colors.info
-      default: return theme.colors.text.secondary
+      case "active":
+        return theme.colors.success;
+      case "cancelled":
+        return theme.colors.error;
+      case "completed":
+        return theme.colors.info;
+      default:
+        return theme.colors.text.secondary;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -520,7 +535,7 @@ export default function AdminShiftsPage() {
         <div style={styles.spinner}></div>
         <p style={{ color: theme.colors.text.secondary }}>Loading events...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -533,15 +548,15 @@ export default function AdminShiftsPage() {
         </div>
         <div style={styles.headerRight}>
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate("/admin/dashboard")}
             style={styles.backButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.white
-              e.currentTarget.style.color = theme.colors.secondary
+              e.currentTarget.style.backgroundColor = theme.colors.white;
+              e.currentTarget.style.color = theme.colors.secondary;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = theme.colors.white
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = theme.colors.white;
             }}
           >
             ← Dashboard
@@ -550,12 +565,12 @@ export default function AdminShiftsPage() {
             onClick={handleLogout}
             style={styles.logoutButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.white
-              e.currentTarget.style.color = theme.colors.secondary
+              e.currentTarget.style.backgroundColor = theme.colors.white;
+              e.currentTarget.style.color = theme.colors.secondary;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = theme.colors.white
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = theme.colors.white;
             }}
           >
             Logout
@@ -574,129 +589,150 @@ export default function AdminShiftsPage() {
           <button
             onClick={() => {
               if (showCreateForm) {
-                setShowCreateForm(false)
-                setEditingEvent(null)
+                setShowCreateForm(false);
+                setEditingEvent(null);
                 setFormData({
-                  title: '',
-                  description: '',
-                  location: '',
-                  start_date: '',
-                  end_date: '',
-                  max_volunteers: '',
+                  title: "",
+                  description: "",
+                  location: "",
+                  start_date: "",
+                  end_date: "",
+                  max_volunteers: "",
                   is_private: false,
-                })
+                });
               } else {
-                setShowCreateForm(true)
+                setShowCreateForm(true);
               }
             }}
             style={styles.createButton}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#c72e3a'
-              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.backgroundColor = "#c72e3a";
+              e.currentTarget.style.transform = "translateY(-2px)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = theme.colors.primary
-              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.backgroundColor = theme.colors.primary;
+              e.currentTarget.style.transform = "translateY(0)";
             }}
           >
-            {showCreateForm ? (editingEvent ? 'Cancel Edit' : 'Cancel') : '+ Create Event'}
+            {showCreateForm
+              ? editingEvent
+                ? "Cancel Edit"
+                : "Cancel"
+              : "+ Create Event"}
           </button>
         </div>
 
-        {error && (
-          <div style={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div style={styles.error}>{error}</div>}
 
         {showCreateForm && (
           <div style={styles.createForm}>
             <h3 style={styles.formTitle}>
-              {editingEvent ? 'Edit Event' : 'Create New Event'}
+              {editingEvent ? "Edit Event" : "Create New Event"}
             </h3>
-            <form onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}>
+            <form
+              onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent}
+            >
               <div style={styles.formGrid}>
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>Event Title *</label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     style={styles.formInput}
                     required
                   />
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>Location *</label>
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     style={styles.formInput}
                     required
                   />
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <DatePicker
                     label="Start Date & Time *"
                     value={formData.start_date}
-                    onChange={(date) => setFormData({...formData, start_date: date})}
+                    onChange={(date) =>
+                      setFormData({ ...formData, start_date: date })
+                    }
                     placeholder="Select start date and time"
                     showTime={true}
                     required
                   />
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <DatePicker
                     label="End Date & Time *"
                     value={formData.end_date}
-                    onChange={(date) => setFormData({...formData, end_date: date})}
+                    onChange={(date) =>
+                      setFormData({ ...formData, end_date: date })
+                    }
                     placeholder="Select end date and time"
                     showTime={true}
                     required
                   />
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <label style={styles.formLabel}>Max Volunteers</label>
                   <input
                     type="number"
                     value={formData.max_volunteers}
-                    onChange={(e) => setFormData({...formData, max_volunteers: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        max_volunteers: e.target.value,
+                      })
+                    }
                     style={styles.formInput}
                     min="1"
                   />
                 </div>
               </div>
-              
+
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>Description</label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   style={styles.formTextarea}
                   placeholder="Describe the event, what volunteers will be doing, etc."
                 />
               </div>
 
               <div style={styles.formGroup}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  cursor: 'pointer',
-                }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
+                  }}
+                >
                   <input
                     type="checkbox"
                     checked={formData.is_private}
-                    onChange={(e) => setFormData({...formData, is_private: e.target.checked})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, is_private: e.target.checked })
+                    }
                     style={{
-                      width: '18px',
-                      height: '18px',
-                      cursor: 'pointer',
+                      width: "18px",
+                      height: "18px",
+                      cursor: "pointer",
                     }}
                   />
                   <span style={styles.formLabel}>
@@ -704,51 +740,56 @@ export default function AdminShiftsPage() {
                   </span>
                 </label>
                 {formData.is_private && (
-                  <p style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    marginTop: '0.5rem',
-                    fontStyle: 'italic',
-                  }}>
-                    Note: After creating this event, you can manage which volunteers or groups can see it.
+                  <p
+                    style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      color: theme.colors.text.secondary,
+                      marginTop: "0.5rem",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Note: After creating this event, you can manage which
+                    volunteers or groups can see it.
                   </p>
                 )}
               </div>
-              
+
               <div style={styles.formActions}>
                 <button
                   type="submit"
                   style={styles.submitButton}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#c72e3a'
+                    e.currentTarget.style.backgroundColor = "#c72e3a";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = theme.colors.primary
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.primary;
                   }}
                 >
-                  {editingEvent ? 'Update Event' : 'Create Event'}
+                  {editingEvent ? "Update Event" : "Create Event"}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setShowCreateForm(false)
-                    setEditingEvent(null)
+                    setShowCreateForm(false);
+                    setEditingEvent(null);
                     setFormData({
-                      title: '',
-                      description: '',
-                      location: '',
-                      start_date: '',
-                      end_date: '',
-                      max_volunteers: '',
+                      title: "",
+                      description: "",
+                      location: "",
+                      start_date: "",
+                      end_date: "",
+                      max_volunteers: "",
                       is_private: false,
-                    })
+                    });
                   }}
                   style={styles.cancelButton}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = theme.colors.neutral[100]
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.neutral[100];
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
                   Cancel
@@ -772,44 +813,52 @@ export default function AdminShiftsPage() {
                     <p style={styles.eventDescription}>{event.description}</p>
                   )}
                 </div>
-                
+
                 <div style={styles.eventContent}>
                   <div style={styles.eventInfo}>
                     <div style={styles.eventInfoRow}>
                       <span style={styles.eventInfoLabel}>Location:</span>
-                      <span style={styles.eventInfoValue}>{event.location}</span>
+                      <span style={styles.eventInfoValue}>
+                        {event.location}
+                      </span>
                     </div>
                     <div style={styles.eventInfoRow}>
                       <span style={styles.eventInfoLabel}>Start:</span>
-                      <span style={styles.eventInfoValue}>{formatDate(event.start_date)}</span>
+                      <span style={styles.eventInfoValue}>
+                        {formatDate(event.start_date)}
+                      </span>
                     </div>
                     <div style={styles.eventInfoRow}>
                       <span style={styles.eventInfoLabel}>End:</span>
-                      <span style={styles.eventInfoValue}>{formatDate(event.end_date)}</span>
+                      <span style={styles.eventInfoValue}>
+                        {formatDate(event.end_date)}
+                      </span>
                     </div>
                     <div style={styles.eventInfoRow}>
                       <span style={styles.eventInfoLabel}>Volunteers:</span>
                       <span style={styles.eventInfoValue}>
-                        {event.volunteer_count} / {event.max_volunteers || '∞'}
+                        {event.volunteer_count} / {event.max_volunteers || "∞"}
                       </span>
                     </div>
                     <div style={styles.eventInfoRow}>
                       <span style={styles.eventInfoLabel}>Status:</span>
-                      <span style={{
-                        ...styles.eventInfoValue,
-                        color: getStatusColor(event.status),
-                        fontWeight: theme.typography.fontWeight.semibold
-                      }}>
+                      <span
+                        style={{
+                          ...styles.eventInfoValue,
+                          color: getStatusColor(event.status),
+                          fontWeight: theme.typography.fontWeight.semibold,
+                        }}
+                      >
                         {event.status}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div style={styles.eventActions}>
                     <button
                       onClick={() => {
-                        setSelectedEvent(event)
-                        setShowAssignmentsModal(true)
+                        setSelectedEvent(event);
+                        setShowAssignmentsModal(true);
                       }}
                       style={{
                         ...styles.actionButton,
@@ -817,18 +866,19 @@ export default function AdminShiftsPage() {
                         color: theme.colors.white,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#e0a800'
+                        e.currentTarget.style.backgroundColor = "#e0a800";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.colors.warning
+                        e.currentTarget.style.backgroundColor =
+                          theme.colors.warning;
                       }}
                     >
                       View Volunteers
                     </button>
                     <button
                       onClick={() => {
-                        setSelectedEvent(event)
-                        setShowShiftModal(true)
+                        setSelectedEvent(event);
+                        setShowShiftModal(true);
                       }}
                       style={{
                         ...styles.actionButton,
@@ -836,10 +886,11 @@ export default function AdminShiftsPage() {
                         color: theme.colors.white,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#28a745'
+                        e.currentTarget.style.backgroundColor = "#28a745";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.colors.success
+                        e.currentTarget.style.backgroundColor =
+                          theme.colors.success;
                       }}
                     >
                       Manage Shifts
@@ -848,13 +899,14 @@ export default function AdminShiftsPage() {
                       onClick={() => handleEditEvent(event)}
                       style={{
                         ...styles.actionButton,
-                        ...styles.editButton
+                        ...styles.editButton,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#138496'
+                        e.currentTarget.style.backgroundColor = "#138496";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.colors.info
+                        e.currentTarget.style.backgroundColor =
+                          theme.colors.info;
                       }}
                     >
                       Edit
@@ -863,13 +915,14 @@ export default function AdminShiftsPage() {
                       onClick={() => handleDeleteEvent(event.id)}
                       style={{
                         ...styles.actionButton,
-                        ...styles.deleteButton
+                        ...styles.deleteButton,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#b02a37'
+                        e.currentTarget.style.backgroundColor = "#b02a37";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = theme.colors.error
+                        e.currentTarget.style.backgroundColor =
+                          theme.colors.error;
                       }}
                     >
                       Delete
@@ -888,11 +941,11 @@ export default function AdminShiftsPage() {
           event={selectedEvent}
           isOpen={showShiftModal}
           onClose={() => {
-            setShowShiftModal(false)
-            setSelectedEvent(null)
+            setShowShiftModal(false);
+            setSelectedEvent(null);
           }}
           onShiftUpdate={() => {
-            fetchEvents() // Refresh events when shifts are updated
+            fetchEvents(); // Refresh events when shifts are updated
           }}
         />
       )}
@@ -904,12 +957,11 @@ export default function AdminShiftsPage() {
           eventTitle={selectedEvent.title}
           isOpen={showAssignmentsModal}
           onClose={() => {
-            setShowAssignmentsModal(false)
-            setSelectedEvent(null)
+            setShowAssignmentsModal(false);
+            setSelectedEvent(null);
           }}
         />
       )}
-
 
       <style>{`
         @keyframes spin {
@@ -918,5 +970,5 @@ export default function AdminShiftsPage() {
         }
       `}</style>
     </div>
-  )
+  );
 }

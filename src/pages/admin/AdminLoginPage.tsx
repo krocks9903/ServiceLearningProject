@@ -1,65 +1,65 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "../../services/supabaseClient"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../services/supabaseClient";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { theme } from "../../constants/theme";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
-  const { user, isAdmin } = useAdminAuth()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { user, isAdmin } = useAdminAuth();
 
   useEffect(() => {
     if (user && isAdmin) {
-      navigate("/admin/dashboard")
+      navigate("/admin/dashboard");
     }
-  }, [user, isAdmin, navigate])
+  }, [user, isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-      })
+      });
 
       if (error) {
-        setError(error.message)
-        setLoading(false)
-        return
+        setError(error.message);
+        setLoading(false);
+        return;
       }
 
       if (data.user) {
         // Check if user is admin
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single()
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
 
-        if (profileError || profile?.role !== 'admin') {
-          await supabase.auth.signOut()
-          setError("Access denied. Admin privileges required.")
-          setLoading(false)
-          return
+        if (profileError || profile?.role !== "admin") {
+          await supabase.auth.signOut();
+          setError("Access denied. Admin privileges required.");
+          setLoading(false);
+          return;
         }
 
         // Redirect to admin dashboard
-        navigate("/admin/dashboard")
+        navigate("/admin/dashboard");
       }
     } catch (error) {
-      setError("An unexpected error occurred")
-      console.error("Login error:", error)
+      setError("An unexpected error occurred");
+      console.error("Login error:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const styles = {
     container: {
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
       marginBottom: "1rem",
     } as React.CSSProperties,
     title: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.5rem",
@@ -156,7 +156,7 @@ export default function AdminLoginPage() {
       textDecoration: "none",
       fontWeight: theme.typography.fontWeight.semibold,
     } as React.CSSProperties,
-  }
+  };
 
   return (
     <div style={styles.container}>
@@ -168,19 +168,17 @@ export default function AdminLoginPage() {
         </div>
 
         <form onSubmit={handleLogin} style={styles.form}>
-          {error && (
-            <div style={styles.error}>
-              {error}
-            </div>
-          )}
+          {error && <div style={styles.error}>{error}</div>}
 
           <div style={styles.inputGroup}>
-            <label htmlFor="email" style={styles.label}>Email Address</label>
+            <label htmlFor="email" style={styles.label}>
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               style={styles.input}
               required
               placeholder="admin@harrychapinfoodbank.org"
@@ -188,12 +186,14 @@ export default function AdminLoginPage() {
           </div>
 
           <div style={styles.inputGroup}>
-            <label htmlFor="password" style={styles.label}>Password</label>
+            <label htmlFor="password" style={styles.label}>
+              Password
+            </label>
             <input
               id="password"
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               style={styles.input}
               required
             />
@@ -204,18 +204,18 @@ export default function AdminLoginPage() {
             disabled={loading}
             style={{
               ...styles.button,
-              ...(loading ? styles.buttonDisabled : {})
+              ...(loading ? styles.buttonDisabled : {}),
             }}
             onMouseEnter={(e) => {
               if (!loading) {
-                e.currentTarget.style.backgroundColor = '#2C3E50'
-                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.backgroundColor = "#2C3E50";
+                e.currentTarget.style.transform = "translateY(-2px)";
               }
             }}
             onMouseLeave={(e) => {
               if (!loading) {
-                e.currentTarget.style.backgroundColor = theme.colors.secondary
-                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.backgroundColor = theme.colors.secondary;
+                e.currentTarget.style.transform = "translateY(0)";
               }
             }}
           >
@@ -232,5 +232,5 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

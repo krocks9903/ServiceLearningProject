@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../../services/supabaseClient"
-import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "../../hooks/useAuth"
-import DatePicker from "../../components/shared/DatePicker"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { DatePicker } from "../../components/shared";
+import { theme } from "../../constants/theme";
 
 export default function SignupPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   // Basic Information
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +17,7 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState("");
   const [nickname, setNickname] = useState("");
   const [title, setTitle] = useState("");
-  
+
   // Address Information
   const [street1, setStreet1] = useState("");
   const [street2, setStreet2] = useState("");
@@ -26,7 +26,7 @@ export default function SignupPage() {
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [country, setCountry] = useState("United States");
-  
+
   // Contact Information
   const [homePhone, setHomePhone] = useState("");
   const [homeOkToCall, setHomeOkToCall] = useState(false);
@@ -34,37 +34,37 @@ export default function SignupPage() {
   const [workOkToCall, setWorkOkToCall] = useState(false);
   const [cellPhone, setCellPhone] = useState("");
   const [cellOkToCall, setCellOkToCall] = useState(false);
-  
+
   // Demographic Information
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("");
   const [education, setEducation] = useState("");
   const [occupation, setOccupation] = useState("");
   const [howHeardAboutUs, setHowHeardAboutUs] = useState("");
-  
+
   // Skills
   const [skills, setSkills] = useState<string[]>([]);
   const [otherSkills, setOtherSkills] = useState("");
-  
+
   // Email Preferences
   const [emailNewsletter, setEmailNewsletter] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [emailScheduleReminders, setEmailScheduleReminders] = useState(true);
   const [emailEmergency, setEmailEmergency] = useState(true);
-  
+
   // Emergency Contact
   const [emergencyFirstName, setEmergencyFirstName] = useState("");
   const [emergencyLastName, setEmergencyLastName] = useState("");
   const [emergencyHomePhone, setEmergencyHomePhone] = useState("");
   const [emergencyWorkPhone, setEmergencyWorkPhone] = useState("");
   const [emergencyCellPhone, setEmergencyCellPhone] = useState("");
-  
+
   // Agreements
   const [agreeConfidentiality, setAgreeConfidentiality] = useState(false);
   const [agreeLiability, setAgreeLiability] = useState(false);
   const [agreePhotoConsent, setAgreePhotoConsent] = useState(false);
   const [agreeVolunteerAgreement, setAgreeVolunteerAgreement] = useState(false);
-  
+
   // Form State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,11 +94,11 @@ export default function SignupPage() {
       borderBottom: `2px solid ${theme.colors.neutral[200]}`,
     } as React.CSSProperties,
     logo: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       marginBottom: "1rem",
     } as React.CSSProperties,
     title: {
-      fontSize: theme.typography.fontSize['3xl'],
+      fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.75rem",
@@ -155,7 +155,7 @@ export default function SignupPage() {
       alignItems: "start",
       "@media (max-width: 768px)": {
         gridTemplateColumns: "1fr",
-      }
+      },
     } as React.CSSProperties,
     inputGroup: {
       display: "flex",
@@ -322,14 +322,12 @@ export default function SignupPage() {
     "Logistics / Warehouse Management",
     "Professional Fundraising Experience",
     "Social Media Campaign Management",
-    "Volgistics Experience"
+    "Volgistics Experience",
   ];
 
   const toggleSkill = (skill: string) => {
-    setSkills(prev => 
-      prev.includes(skill) 
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
+    setSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
   };
 
@@ -337,7 +335,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     // Validation
     if (password.length < 8) {
       setError("Password must be at least 8 characters long");
@@ -358,15 +356,15 @@ export default function SignupPage() {
     }
 
     // Create auth user
-    const { data, error: signUpError } = await supabase.auth.signUp({ 
-      email, 
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
       password,
       options: {
         data: {
           first_name: firstName,
           last_name: lastName,
-        }
-      }
+        },
+      },
     });
 
     if (signUpError) {
@@ -378,7 +376,7 @@ export default function SignupPage() {
     const newUser = data.user;
     if (newUser) {
       // Wait a moment for any database triggers to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Check if profile already exists (created by trigger)
       const { data: existingProfile, error: checkError } = await supabase
@@ -397,7 +395,7 @@ export default function SignupPage() {
         city,
         state,
         zipCode,
-        country
+        country,
       };
 
       // Compile all skills including custom ones
@@ -413,7 +411,8 @@ export default function SignupPage() {
       if (gender) additionalInfo.push(`Gender: ${gender}`);
       if (education) additionalInfo.push(`Education: ${education}`);
       if (occupation) additionalInfo.push(`Occupation: ${occupation}`);
-      if (howHeardAboutUs) additionalInfo.push(`Heard from: ${howHeardAboutUs}`);
+      if (howHeardAboutUs)
+        additionalInfo.push(`Heard from: ${howHeardAboutUs}`);
 
       // Build the profile data
       const profileUpdateData: any = {
@@ -421,13 +420,18 @@ export default function SignupPage() {
         first_name: firstName,
         last_name: lastName,
         phone: cellPhone || homePhone || workPhone || null,
-        emergency_contact_name: `${emergencyFirstName} ${emergencyLastName}`.trim() || null,
-        emergency_contact_phone: emergencyCellPhone || emergencyHomePhone || emergencyWorkPhone || null,
+        emergency_contact_name:
+          `${emergencyFirstName} ${emergencyLastName}`.trim() || null,
+        emergency_contact_phone:
+          emergencyCellPhone ||
+          emergencyHomePhone ||
+          emergencyWorkPhone ||
+          null,
         date_of_birth: dateOfBirth || null,
         address: addressData,
         status: "pending", // Will be activated after background check
         role: "volunteer", // Set role as volunteer
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       // Only add skills if there are any
@@ -455,19 +459,19 @@ export default function SignupPage() {
       } else {
         // Insert new profile
         console.log("Inserting new profile...");
-        const { error } = await supabase
-          .from("profiles")
-          .insert({
-            id: newUser.id,
-            ...profileUpdateData
-          });
+        const { error } = await supabase.from("profiles").insert({
+          id: newUser.id,
+          ...profileUpdateData,
+        });
         profileError = error;
       }
 
       if (profileError) {
         console.error("Error saving profile:", profileError);
         console.error("Profile data that failed:", profileUpdateData);
-        setError(`Account created but profile setup failed: ${profileError.message}. Please contact support.`);
+        setError(
+          `Account created but profile setup failed: ${profileError.message}. Please contact support.`
+        );
         setLoading(false);
         return;
       }
@@ -475,7 +479,7 @@ export default function SignupPage() {
       console.log("Profile saved successfully!");
       setSuccess(true);
       setLoading(false);
-      
+
       // Redirect after a short delay
       setTimeout(() => {
         navigate("/dashboard");
@@ -487,7 +491,12 @@ export default function SignupPage() {
     return (
       <div style={styles.loadingContainer}>
         <div style={styles.spinner}></div>
-        <p style={{ fontFamily: theme.typography.fontFamily, color: theme.colors.text.secondary }}>
+        <p
+          style={{
+            fontFamily: theme.typography.fontFamily,
+            color: theme.colors.text.secondary,
+          }}
+        >
           Loading...
         </p>
       </div>
@@ -501,17 +510,19 @@ export default function SignupPage() {
           <div style={styles.logo}>🍽</div>
           <h1 style={styles.title}>Individual Volunteer Registration Form</h1>
           <p style={styles.subtitle}>
-            Thank you for your interest in becoming a Harry Chapin Food Bank of SWFL volunteer! 
-            Once your registration is processed, you will receive an email with more information about volunteering and how to get started.
+            Thank you for your interest in becoming a Harry Chapin Food Bank of
+            SWFL volunteer! Once your registration is processed, you will
+            receive an email with more information about volunteering and how to
+            get started.
           </p>
         </div>
-        
+
         {success ? (
           <div style={styles.success}>
             <strong>✓ Success!</strong>
             <p style={{ marginTop: "0.5rem" }}>
-              Your registration has been submitted! You will receive an email with next steps. 
-              Redirecting to dashboard...
+              Your registration has been submitted! You will receive an email
+              with next steps. Redirecting to dashboard...
             </p>
           </div>
         ) : (
@@ -521,31 +532,35 @@ export default function SignupPage() {
                 <strong>Error:</strong> {error}
               </div>
             )}
-            
+
             {/* Name and Contact Information */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Name and Contact Information</h2>
-              
+
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="firstName" style={styles.label}>First Name *</label>
+                  <label htmlFor="firstName" style={styles.label}>
+                    First Name *
+                  </label>
                   <input
                     id="firstName"
                     type="text"
                     value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
+                    onChange={(e) => setFirstName(e.target.value)}
                     style={styles.input}
                     required
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="lastName" style={styles.label}>Last Name *</label>
+                  <label htmlFor="lastName" style={styles.label}>
+                    Last Name *
+                  </label>
                   <input
                     id="lastName"
                     type="text"
                     value={lastName}
-                    onChange={e => setLastName(e.target.value)}
+                    onChange={(e) => setLastName(e.target.value)}
                     style={styles.input}
                     required
                   />
@@ -554,36 +569,42 @@ export default function SignupPage() {
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="nickname" style={styles.label}>Nickname</label>
+                  <label htmlFor="nickname" style={styles.label}>
+                    Nickname
+                  </label>
                   <input
                     id="nickname"
                     type="text"
                     value={nickname}
-                    onChange={e => setNickname(e.target.value)}
+                    onChange={(e) => setNickname(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="title" style={styles.label}>Title</label>
+                  <label htmlFor="title" style={styles.label}>
+                    Title
+                  </label>
                   <input
                     id="title"
                     type="text"
                     placeholder="e.g., Mr., Mrs., Dr."
                     value={title}
-                    onChange={e => setTitle(e.target.value)}
+                    onChange={(e) => setTitle(e.target.value)}
                     style={styles.input}
                   />
                 </div>
               </div>
 
               <div style={styles.inputGroup}>
-                <label htmlFor="email" style={styles.label}>Email Address *</label>
+                <label htmlFor="email" style={styles.label}>
+                  Email Address *
+                </label>
                 <input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   style={styles.input}
                   required
                 />
@@ -593,37 +614,43 @@ export default function SignupPage() {
             {/* Address */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Address</h2>
-              
+
               <div style={styles.inputGroup}>
-                <label htmlFor="street1" style={styles.label}>Street 1</label>
+                <label htmlFor="street1" style={styles.label}>
+                  Street 1
+                </label>
                 <input
                   id="street1"
                   type="text"
                   value={street1}
-                  onChange={e => setStreet1(e.target.value)}
+                  onChange={(e) => setStreet1(e.target.value)}
                   style={styles.input}
                 />
               </div>
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="street2" style={styles.label}>Street 2</label>
+                  <label htmlFor="street2" style={styles.label}>
+                    Street 2
+                  </label>
                   <input
                     id="street2"
                     type="text"
                     value={street2}
-                    onChange={e => setStreet2(e.target.value)}
+                    onChange={(e) => setStreet2(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="street3" style={styles.label}>Street 3</label>
+                  <label htmlFor="street3" style={styles.label}>
+                    Street 3
+                  </label>
                   <input
                     id="street3"
                     type="text"
                     value={street3}
-                    onChange={e => setStreet3(e.target.value)}
+                    onChange={(e) => setStreet3(e.target.value)}
                     style={styles.input}
                   />
                 </div>
@@ -631,24 +658,28 @@ export default function SignupPage() {
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="city" style={styles.label}>City</label>
+                  <label htmlFor="city" style={styles.label}>
+                    City
+                  </label>
                   <input
                     id="city"
                     type="text"
                     value={city}
-                    onChange={e => setCity(e.target.value)}
+                    onChange={(e) => setCity(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="state" style={styles.label}>State/Province</label>
+                  <label htmlFor="state" style={styles.label}>
+                    State/Province
+                  </label>
                   <input
                     id="state"
                     type="text"
                     placeholder="FL"
                     value={state}
-                    onChange={e => setState(e.target.value)}
+                    onChange={(e) => setState(e.target.value)}
                     style={styles.input}
                   />
                 </div>
@@ -656,23 +687,27 @@ export default function SignupPage() {
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="zipCode" style={styles.label}>Zip/Postal Code</label>
+                  <label htmlFor="zipCode" style={styles.label}>
+                    Zip/Postal Code
+                  </label>
                   <input
                     id="zipCode"
                     type="text"
                     value={zipCode}
-                    onChange={e => setZipCode(e.target.value)}
+                    onChange={(e) => setZipCode(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="country" style={styles.label}>Country</label>
+                  <label htmlFor="country" style={styles.label}>
+                    Country
+                  </label>
                   <input
                     id="country"
                     type="text"
                     value={country}
-                    onChange={e => setCountry(e.target.value)}
+                    onChange={(e) => setCountry(e.target.value)}
                     style={styles.input}
                   />
                 </div>
@@ -682,16 +717,18 @@ export default function SignupPage() {
             {/* Phone Numbers */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Phone Numbers</h2>
-              
+
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="homePhone" style={styles.label}>Home Phone</label>
+                  <label htmlFor="homePhone" style={styles.label}>
+                    Home Phone
+                  </label>
                   <input
                     id="homePhone"
                     type="tel"
                     placeholder="(239) 555-0123"
                     value={homePhone}
-                    onChange={e => setHomePhone(e.target.value)}
+                    onChange={(e) => setHomePhone(e.target.value)}
                     style={styles.input}
                   />
                   <div style={styles.checkboxRow}>
@@ -699,7 +736,7 @@ export default function SignupPage() {
                       type="checkbox"
                       id="homeOkToCall"
                       checked={homeOkToCall}
-                      onChange={e => setHomeOkToCall(e.target.checked)}
+                      onChange={(e) => setHomeOkToCall(e.target.checked)}
                       style={styles.checkbox}
                     />
                     <label htmlFor="homeOkToCall" style={styles.checkboxLabel}>
@@ -707,15 +744,17 @@ export default function SignupPage() {
                     </label>
                   </div>
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="workPhone" style={styles.label}>Work Phone</label>
+                  <label htmlFor="workPhone" style={styles.label}>
+                    Work Phone
+                  </label>
                   <input
                     id="workPhone"
                     type="tel"
                     placeholder="(239) 555-0123"
                     value={workPhone}
-                    onChange={e => setWorkPhone(e.target.value)}
+                    onChange={(e) => setWorkPhone(e.target.value)}
                     style={styles.input}
                   />
                   <div style={styles.checkboxRow}>
@@ -723,7 +762,7 @@ export default function SignupPage() {
                       type="checkbox"
                       id="workOkToCall"
                       checked={workOkToCall}
-                      onChange={e => setWorkOkToCall(e.target.checked)}
+                      onChange={(e) => setWorkOkToCall(e.target.checked)}
                       style={styles.checkbox}
                     />
                     <label htmlFor="workOkToCall" style={styles.checkboxLabel}>
@@ -734,13 +773,15 @@ export default function SignupPage() {
               </div>
 
               <div style={{ ...styles.inputGroup, maxWidth: "49%" }}>
-                <label htmlFor="cellPhone" style={styles.label}>Cell Phone</label>
+                <label htmlFor="cellPhone" style={styles.label}>
+                  Cell Phone
+                </label>
                 <input
                   id="cellPhone"
                   type="tel"
                   placeholder="(239) 555-0123"
                   value={cellPhone}
-                  onChange={e => setCellPhone(e.target.value)}
+                  onChange={(e) => setCellPhone(e.target.value)}
                   style={styles.input}
                 />
                 <div style={styles.checkboxRow}>
@@ -748,7 +789,7 @@ export default function SignupPage() {
                     type="checkbox"
                     id="cellOkToCall"
                     checked={cellOkToCall}
-                    onChange={e => setCellOkToCall(e.target.checked)}
+                    onChange={(e) => setCellOkToCall(e.target.checked)}
                     style={styles.checkbox}
                   />
                   <label htmlFor="cellOkToCall" style={styles.checkboxLabel}>
@@ -762,9 +803,10 @@ export default function SignupPage() {
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Demographic Information</h2>
               <p style={styles.sectionDescription}>
-                This information helps us better understand our volunteer community.
+                This information helps us better understand our volunteer
+                community.
               </p>
-              
+
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
                   <DatePicker
@@ -774,13 +816,15 @@ export default function SignupPage() {
                     placeholder="Select your date of birth"
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="gender" style={styles.label}>Gender</label>
+                  <label htmlFor="gender" style={styles.label}>
+                    Gender
+                  </label>
                   <select
                     id="gender"
                     value={gender}
-                    onChange={e => setGender(e.target.value)}
+                    onChange={(e) => setGender(e.target.value)}
                     style={styles.select}
                   >
                     <option value="">Select...</option>
@@ -794,11 +838,13 @@ export default function SignupPage() {
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="education" style={styles.label}>Education</label>
+                  <label htmlFor="education" style={styles.label}>
+                    Education
+                  </label>
                   <select
                     id="education"
                     value={education}
-                    onChange={e => setEducation(e.target.value)}
+                    onChange={(e) => setEducation(e.target.value)}
                     style={styles.select}
                   >
                     <option value="">Select...</option>
@@ -811,25 +857,29 @@ export default function SignupPage() {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="occupation" style={styles.label}>Occupation</label>
+                  <label htmlFor="occupation" style={styles.label}>
+                    Occupation
+                  </label>
                   <input
                     id="occupation"
                     type="text"
                     value={occupation}
-                    onChange={e => setOccupation(e.target.value)}
+                    onChange={(e) => setOccupation(e.target.value)}
                     style={styles.input}
                   />
                 </div>
               </div>
 
               <div style={styles.inputGroup}>
-                <label htmlFor="howHeardAboutUs" style={styles.label}>How did you hear about us?</label>
+                <label htmlFor="howHeardAboutUs" style={styles.label}>
+                  How did you hear about us?
+                </label>
                 <select
                   id="howHeardAboutUs"
                   value={howHeardAboutUs}
-                  onChange={e => setHowHeardAboutUs(e.target.value)}
+                  onChange={(e) => setHowHeardAboutUs(e.target.value)}
                   style={styles.select}
                 >
                   <option value="">Select...</option>
@@ -849,11 +899,12 @@ export default function SignupPage() {
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Skills (Optional)</h2>
               <p style={styles.sectionDescription}>
-                Please select any skills that may be valuable to our organization.
+                Please select any skills that may be valuable to our
+                organization.
               </p>
-              
+
               <div style={styles.skillsGrid}>
-                {skillsOptions.map(skill => (
+                {skillsOptions.map((skill) => (
                   <div key={skill} style={styles.checkboxRow}>
                     <input
                       type="checkbox"
@@ -876,7 +927,7 @@ export default function SignupPage() {
                 <textarea
                   id="otherSkills"
                   value={otherSkills}
-                  onChange={e => setOtherSkills(e.target.value)}
+                  onChange={(e) => setOtherSkills(e.target.value)}
                   style={styles.textarea}
                   placeholder="Describe any other skills that may be valuable..."
                 />
@@ -889,18 +940,19 @@ export default function SignupPage() {
               <p style={styles.sectionDescription}>
                 Select the types of emails you would like to receive.
               </p>
-              
+
               <div style={styles.checkboxGroup}>
                 <div style={styles.checkboxRow}>
                   <input
                     type="checkbox"
                     id="emailNewsletter"
                     checked={emailNewsletter}
-                    onChange={e => setEmailNewsletter(e.target.checked)}
+                    onChange={(e) => setEmailNewsletter(e.target.checked)}
                     style={styles.checkbox}
                   />
                   <label htmlFor="emailNewsletter" style={styles.checkboxLabel}>
-                    <strong>Electronic newsletters</strong> - Volunteer Vibes newsletter written by volunteers
+                    <strong>Electronic newsletters</strong> - Volunteer Vibes
+                    newsletter written by volunteers
                   </label>
                 </div>
 
@@ -909,11 +961,15 @@ export default function SignupPage() {
                     type="checkbox"
                     id="emailNotifications"
                     checked={emailNotifications}
-                    onChange={e => setEmailNotifications(e.target.checked)}
+                    onChange={(e) => setEmailNotifications(e.target.checked)}
                     style={styles.checkbox}
                   />
-                  <label htmlFor="emailNotifications" style={styles.checkboxLabel}>
-                    <strong>Notifications</strong> - Important information like closings and cancellations (Recommended)
+                  <label
+                    htmlFor="emailNotifications"
+                    style={styles.checkboxLabel}
+                  >
+                    <strong>Notifications</strong> - Important information like
+                    closings and cancellations (Recommended)
                   </label>
                 </div>
 
@@ -922,11 +978,17 @@ export default function SignupPage() {
                     type="checkbox"
                     id="emailScheduleReminders"
                     checked={emailScheduleReminders}
-                    onChange={e => setEmailScheduleReminders(e.target.checked)}
+                    onChange={(e) =>
+                      setEmailScheduleReminders(e.target.checked)
+                    }
                     style={styles.checkbox}
                   />
-                  <label htmlFor="emailScheduleReminders" style={styles.checkboxLabel}>
-                    <strong>Schedule reminders</strong> - Reminders about upcoming volunteer assignments
+                  <label
+                    htmlFor="emailScheduleReminders"
+                    style={styles.checkboxLabel}
+                  >
+                    <strong>Schedule reminders</strong> - Reminders about
+                    upcoming volunteer assignments
                   </label>
                 </div>
 
@@ -935,11 +997,12 @@ export default function SignupPage() {
                     type="checkbox"
                     id="emailEmergency"
                     checked={emailEmergency}
-                    onChange={e => setEmailEmergency(e.target.checked)}
+                    onChange={(e) => setEmailEmergency(e.target.checked)}
                     style={styles.checkbox}
                   />
                   <label htmlFor="emailEmergency" style={styles.checkboxLabel}>
-                    <strong>Emergency operations</strong> - Hurricane and natural disaster information (Recommended)
+                    <strong>Emergency operations</strong> - Hurricane and
+                    natural disaster information (Recommended)
                   </label>
                 </div>
               </div>
@@ -951,26 +1014,30 @@ export default function SignupPage() {
               <p style={styles.sectionDescription}>
                 In case of emergency, who should we contact?
               </p>
-              
+
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="emergencyFirstName" style={styles.label}>First Name</label>
+                  <label htmlFor="emergencyFirstName" style={styles.label}>
+                    First Name
+                  </label>
                   <input
                     id="emergencyFirstName"
                     type="text"
                     value={emergencyFirstName}
-                    onChange={e => setEmergencyFirstName(e.target.value)}
+                    onChange={(e) => setEmergencyFirstName(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="emergencyLastName" style={styles.label}>Last Name</label>
+                  <label htmlFor="emergencyLastName" style={styles.label}>
+                    Last Name
+                  </label>
                   <input
                     id="emergencyLastName"
                     type="text"
                     value={emergencyLastName}
-                    onChange={e => setEmergencyLastName(e.target.value)}
+                    onChange={(e) => setEmergencyLastName(e.target.value)}
                     style={styles.input}
                   />
                 </div>
@@ -978,35 +1045,41 @@ export default function SignupPage() {
 
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="emergencyHomePhone" style={styles.label}>Home Phone</label>
+                  <label htmlFor="emergencyHomePhone" style={styles.label}>
+                    Home Phone
+                  </label>
                   <input
                     id="emergencyHomePhone"
                     type="tel"
                     value={emergencyHomePhone}
-                    onChange={e => setEmergencyHomePhone(e.target.value)}
+                    onChange={(e) => setEmergencyHomePhone(e.target.value)}
                     style={styles.input}
                   />
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="emergencyWorkPhone" style={styles.label}>Work Phone</label>
+                  <label htmlFor="emergencyWorkPhone" style={styles.label}>
+                    Work Phone
+                  </label>
                   <input
                     id="emergencyWorkPhone"
                     type="tel"
                     value={emergencyWorkPhone}
-                    onChange={e => setEmergencyWorkPhone(e.target.value)}
+                    onChange={(e) => setEmergencyWorkPhone(e.target.value)}
                     style={styles.input}
                   />
                 </div>
               </div>
 
               <div style={{ ...styles.inputGroup, maxWidth: "49%" }}>
-                <label htmlFor="emergencyCellPhone" style={styles.label}>Cell Phone</label>
+                <label htmlFor="emergencyCellPhone" style={styles.label}>
+                  Cell Phone
+                </label>
                 <input
                   id="emergencyCellPhone"
                   type="tel"
                   value={emergencyCellPhone}
-                  onChange={e => setEmergencyCellPhone(e.target.value)}
+                  onChange={(e) => setEmergencyCellPhone(e.target.value)}
                   style={styles.input}
                 />
               </div>
@@ -1016,31 +1089,38 @@ export default function SignupPage() {
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Create Your Account</h2>
               <p style={styles.sectionDescription}>
-                Create a secure password to manage your volunteer profile online.
+                Create a secure password to manage your volunteer profile
+                online.
               </p>
-              
+
               <div style={styles.row} className="signup-row">
                 <div style={styles.inputGroup}>
-                  <label htmlFor="password" style={styles.label}>Password *</label>
+                  <label htmlFor="password" style={styles.label}>
+                    Password *
+                  </label>
                   <input
                     id="password"
                     type="password"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     style={styles.input}
                     required
                     minLength={8}
                   />
-                  <p style={styles.hint}>At least 8 characters, mixture of letters and numbers</p>
+                  <p style={styles.hint}>
+                    At least 8 characters, mixture of letters and numbers
+                  </p>
                 </div>
-                
+
                 <div style={styles.inputGroup}>
-                  <label htmlFor="confirmPassword" style={styles.label}>Confirm Password *</label>
+                  <label htmlFor="confirmPassword" style={styles.label}>
+                    Confirm Password *
+                  </label>
                   <input
                     id="confirmPassword"
                     type="password"
                     value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     style={styles.input}
                     required
                     minLength={8}
@@ -1052,42 +1132,54 @@ export default function SignupPage() {
             {/* Agreements */}
             <div>
               <h2 style={styles.sectionTitle}>Consent Forms and Agreements</h2>
-              
+
               <div style={styles.agreementBox}>
-                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>Statement of Confidentiality</h3>
+                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>
+                  Statement of Confidentiality
+                </h3>
                 <p style={styles.agreementText}>
-                  Harry Chapin Food Bank of SWFL requires that strict confidentiality be maintained with respect to all 
-                  information obtained by volunteers concerning the organization, as well as the clients and others they serve. 
-                  The volunteer shall not disclose any information obtained in the course of his/her volunteer placement 
-                  to any third parties without prior written consent from Harry Chapin Food Bank of SWFL.
+                  Harry Chapin Food Bank of SWFL requires that strict
+                  confidentiality be maintained with respect to all information
+                  obtained by volunteers concerning the organization, as well as
+                  the clients and others they serve. The volunteer shall not
+                  disclose any information obtained in the course of his/her
+                  volunteer placement to any third parties without prior written
+                  consent from Harry Chapin Food Bank of SWFL.
                 </p>
                 <div style={styles.checkboxRow}>
                   <input
                     type="checkbox"
                     id="agreeConfidentiality"
                     checked={agreeConfidentiality}
-                    onChange={e => setAgreeConfidentiality(e.target.checked)}
+                    onChange={(e) => setAgreeConfidentiality(e.target.checked)}
                     style={styles.checkbox}
                   />
-                  <label htmlFor="agreeConfidentiality" style={styles.checkboxLabel}>
+                  <label
+                    htmlFor="agreeConfidentiality"
+                    style={styles.checkboxLabel}
+                  >
                     I understand and agree to uphold confidentiality
                   </label>
                 </div>
               </div>
 
               <div style={styles.agreementBox}>
-                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>Release of Liability</h3>
+                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>
+                  Release of Liability
+                </h3>
                 <p style={styles.agreementText}>
-                  I understand that any work performed as a volunteer is at my own risk. I hereby agree to release 
-                  and discharge Harry Chapin Food Bank of SWFL, its officers, directors, employees, agents, and volunteers 
-                  from all claims, suits, demands, and actions for injuries sustained to my person and/or property.
+                  I understand that any work performed as a volunteer is at my
+                  own risk. I hereby agree to release and discharge Harry Chapin
+                  Food Bank of SWFL, its officers, directors, employees, agents,
+                  and volunteers from all claims, suits, demands, and actions
+                  for injuries sustained to my person and/or property.
                 </p>
                 <div style={styles.checkboxRow}>
                   <input
                     type="checkbox"
                     id="agreeLiability"
                     checked={agreeLiability}
-                    onChange={e => setAgreeLiability(e.target.checked)}
+                    onChange={(e) => setAgreeLiability(e.target.checked)}
                     style={styles.checkbox}
                   />
                   <label htmlFor="agreeLiability" style={styles.checkboxLabel}>
@@ -1097,31 +1189,41 @@ export default function SignupPage() {
               </div>
 
               <div style={styles.agreementBox}>
-                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>Photo Consent</h3>
+                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>
+                  Photo Consent
+                </h3>
                 <p style={styles.agreementText}>
-                  I agree to allow Harry Chapin Food Bank of SWFL unrestricted use of photographs taken of me in the course 
-                  of participation in activities sponsored by Harry Chapin Food Bank of SWFL, to be used only in connection 
-                  with official publications and documents.
+                  I agree to allow Harry Chapin Food Bank of SWFL unrestricted
+                  use of photographs taken of me in the course of participation
+                  in activities sponsored by Harry Chapin Food Bank of SWFL, to
+                  be used only in connection with official publications and
+                  documents.
                 </p>
                 <div style={styles.checkboxRow}>
                   <input
                     type="checkbox"
                     id="agreePhotoConsent"
                     checked={agreePhotoConsent}
-                    onChange={e => setAgreePhotoConsent(e.target.checked)}
+                    onChange={(e) => setAgreePhotoConsent(e.target.checked)}
                     style={styles.checkbox}
                   />
-                  <label htmlFor="agreePhotoConsent" style={styles.checkboxLabel}>
+                  <label
+                    htmlFor="agreePhotoConsent"
+                    style={styles.checkboxLabel}
+                  >
                     I agree to photo consent
                   </label>
                 </div>
               </div>
 
               <div style={styles.agreementBox}>
-                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>Volunteer Agreement</h3>
+                <h3 style={{ ...styles.label, marginBottom: "0.75rem" }}>
+                  Volunteer Agreement
+                </h3>
                 <p style={styles.agreementText}>
-                  By checking this box, I agree to all policies and waivers set forth by Harry Chapin Food Bank 
-                  of SWFL, including a background check which will be performed after my application 
+                  By checking this box, I agree to all policies and waivers set
+                  forth by Harry Chapin Food Bank of SWFL, including a
+                  background check which will be performed after my application
                   has been received.
                 </p>
                 <div style={styles.checkboxRow}>
@@ -1129,11 +1231,16 @@ export default function SignupPage() {
                     type="checkbox"
                     id="agreeVolunteerAgreement"
                     checked={agreeVolunteerAgreement}
-                    onChange={e => setAgreeVolunteerAgreement(e.target.checked)}
+                    onChange={(e) =>
+                      setAgreeVolunteerAgreement(e.target.checked)
+                    }
                     style={styles.checkbox}
                     required
                   />
-                  <label htmlFor="agreeVolunteerAgreement" style={styles.checkboxLabel}>
+                  <label
+                    htmlFor="agreeVolunteerAgreement"
+                    style={styles.checkboxLabel}
+                  >
                     <strong>I Agree *</strong>
                   </label>
                 </div>
@@ -1145,18 +1252,20 @@ export default function SignupPage() {
               disabled={loading || !agreeVolunteerAgreement}
               style={{
                 ...styles.button,
-                ...(loading || !agreeVolunteerAgreement ? styles.buttonDisabled : {})
+                ...(loading || !agreeVolunteerAgreement
+                  ? styles.buttonDisabled
+                  : {}),
               }}
               onMouseEnter={(e) => {
                 if (!loading && agreeVolunteerAgreement) {
-                  e.currentTarget.style.backgroundColor = '#c72e3a'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.backgroundColor = "#c72e3a";
+                  e.currentTarget.style.transform = "translateY(-2px)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loading && agreeVolunteerAgreement) {
-                  e.currentTarget.style.backgroundColor = theme.colors.primary
-                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.backgroundColor = theme.colors.primary;
+                  e.currentTarget.style.transform = "translateY(0)";
                 }
               }}
             >
@@ -1164,7 +1273,7 @@ export default function SignupPage() {
             </button>
           </form>
         )}
-        
+
         <div style={styles.footer}>
           <p>
             Already have an account?{" "}
@@ -1174,13 +1283,16 @@ export default function SignupPage() {
           </p>
           <p style={{ marginTop: "0.5rem" }}>
             Need assistance? Contact us at{" "}
-            <a href="mailto:volunteering@harrychapinfoodbank.org" style={styles.link}>
+            <a
+              href="mailto:volunteering@harrychapinfoodbank.org"
+              style={styles.link}
+            >
               volunteering@harrychapinfoodbank.org
             </a>
           </p>
         </div>
       </div>
-      
+
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }

@@ -1,29 +1,32 @@
-// Re-export shared components
-export { default as Navbar } from './Navbar'
-export { default as Calendar } from './Calendar'
-export { default as DatePicker } from './DatePicker'
+// Navigation Components
+export { default as Navbar } from './navigation/Navbar'
+export { default as Calendar } from './navigation/Calendar'
 
-// UI Components Library
-export { Button } from './Button'
-export type { ButtonProps } from './Button'
+// Form Components
+export { default as DatePicker } from './form/DatePicker'
+export { Input, TextArea } from './form/Input'
+export type { InputProps, TextAreaProps } from './form/Input'
 
-export { Card, CardHeader, CardBody, CardFooter } from './Card'
-export type { CardProps, CardHeaderProps, CardBodyProps, CardFooterProps } from './Card'
+// UI Components
+export { Button } from './ui/Button'
+export type { ButtonProps } from './ui/Button'
 
-export { Input, TextArea } from './Input'
-export type { InputProps, TextAreaProps } from './Input'
+export { Card, CardHeader, CardBody, CardFooter } from './ui/Card'
+export type { CardProps, CardHeaderProps, CardBodyProps, CardFooterProps } from './ui/Card'
 
-export { Badge } from './Badge'
-export type { BadgeProps } from './Badge'
+export { Badge } from './ui/Badge'
+export type { BadgeProps } from './ui/Badge'
 
-export { Spinner, SpinnerOverlay } from './Spinner'
-export type { SpinnerProps, SpinnerOverlayProps } from './Spinner'
+// Layout Components
+export { Modal, ModalFooter } from './layout/Modal'
+export type { ModalProps, ModalFooterProps } from './layout/Modal'
 
-export { Alert } from './Alert'
-export type { AlertProps } from './Alert'
+// Feedback Components
+export { Spinner, SpinnerOverlay } from './feedback/Spinner'
+export type { SpinnerProps, SpinnerOverlayProps } from './feedback/Spinner'
 
-export { Modal, ModalFooter } from './Modal'
-export type { ModalProps, ModalFooterProps } from './Modal'
+export { Alert } from './feedback/Alert'
+export type { AlertProps } from './feedback/Alert'
 
 // Skeleton Loaders
 export {
@@ -35,5 +38,5 @@ export {
     SkeletonDashboardCard,
     SkeletonEventCard,
     SkeletonTable,
-} from './Skeleton'
-export type { SkeletonProps } from './Skeleton'
+} from './feedback/Skeleton'
+export type { SkeletonProps } from './feedback/Skeleton'

@@ -1,9 +1,9 @@
-import React from 'react';
-import './Alert.css';
+import React from "react";
+import "./Alert.css";
 
 export interface AlertProps {
   children: React.ReactNode;
-  variant?: 'info' | 'success' | 'warning' | 'danger';
+  variant?: "info" | "success" | "warning" | "danger";
   title?: string;
   dismissible?: boolean;
   onDismiss?: () => void;
@@ -13,20 +13,22 @@ export interface AlertProps {
 
 export const Alert: React.FC<AlertProps> = ({
   children,
-  variant = 'info',
+  variant = "info",
   title,
   dismissible = false,
   onDismiss,
   icon,
-  className = '',
+  className = "",
 }) => {
-  const alertClass = ['alert', `alert-${variant}`, className].filter(Boolean).join(' ');
+  const alertClass = ["alert", `alert-${variant}`, className]
+    .filter(Boolean)
+    .join(" ");
 
   const defaultIcons = {
-    info: 'ℹ️',
-    success: '✓',
-    warning: '⚠️',
-    danger: '✕',
+    info: "ℹ️",
+    success: "✓",
+    warning: "⚠️",
+    danger: "✕",
   };
 
   const displayIcon = icon || defaultIcons[variant];
@@ -41,7 +43,11 @@ export const Alert: React.FC<AlertProps> = ({
         </div>
       </div>
       {dismissible && (
-        <button className="alert-dismiss" onClick={onDismiss} aria-label="Dismiss">
+        <button
+          className="alert-dismiss"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+        >
           ✕
         </button>
       )}

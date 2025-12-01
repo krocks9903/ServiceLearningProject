@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '../../test/utils'
 import Navbar from './Navbar'
-import * as useAuthModule from '../../hooks/useAuth'
+import * as useAuthModule from '../../../hooks/useAuth'
 
 // Mock the useAuth hook
 vi.mock('../../hooks/useAuth', () => ({

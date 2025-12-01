@@ -1,52 +1,52 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../../services/supabaseClient"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { theme } from "../../constants/theme";
 
 interface Volunteer {
-  id: string
-  email: string
-  first_name: string
-  last_name: string
-  phone?: string
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
 }
 
 interface Shift {
-  id: string
-  title?: string
-  name?: string
-  start_time: string
-  end_time: string
-  capacity?: number | null
-  max_volunteers?: number | null
+  id: string;
+  title?: string;
+  name?: string;
+  start_time: string;
+  end_time: string;
+  capacity?: number | null;
+  max_volunteers?: number | null;
 }
 
 interface Assignment {
-  id: string
-  volunteer_id: string
-  shift_id: string
-  status: string
-  created_at: string
-  profiles: Volunteer
-  shifts: Shift
+  id: string;
+  volunteer_id: string;
+  shift_id: string;
+  status: string;
+  created_at: string;
+  profiles: Volunteer;
+  shifts: Shift;
 }
 
 interface VolunteerAssignmentsModalProps {
-  eventId: string
-  eventTitle: string
-  isOpen: boolean
-  onClose: () => void
+  eventId: string;
+  eventTitle: string;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function VolunteerAssignmentsModal({ 
-  eventId, 
-  eventTitle, 
-  isOpen, 
-  onClose 
+export default function VolunteerAssignmentsModal({
+  eventId,
+  eventTitle,
+  isOpen,
+  onClose,
 }: VolunteerAssignmentsModalProps) {
-  const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const styles = {
     overlay: {
@@ -79,7 +79,7 @@ export default function VolunteerAssignmentsModal({
       alignItems: "flex-start",
     } as React.CSSProperties,
     title: {
-      fontSize: theme.typography.fontSize['2xl'],
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       margin: 0,
@@ -243,7 +243,7 @@ export default function VolunteerAssignmentsModal({
       textAlign: "center" as const,
     } as React.CSSProperties,
     summaryValue: {
-      fontSize: theme.typography.fontSize['2xl'],
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       marginBottom: "0.25rem",
@@ -252,26 +252,26 @@ export default function VolunteerAssignmentsModal({
       fontSize: theme.typography.fontSize.sm,
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
-  }
+  };
 
   const fetchAssignments = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      console.log("Fetching assignments for eventId:", eventId)
-      
+      console.log("Fetching assignments for eventId:", eventId);
+
       // First, let's try a simple query to see if the table exists and has data
       const { data: simpleData, error: simpleError } = await supabase
         .from("volunteer_assignments")
         .select("*")
-        .eq("event_id", eventId)
+        .eq("event_id", eventId);
 
-      console.log("Simple query result:", { simpleData, simpleError })
+      console.log("Simple query result:", { simpleData, simpleError });
 
       if (simpleError) {
-        console.error("Simple query error:", simpleError)
-        setError(`Database error: ${simpleError.message}`)
-        return
+        console.error("Simple query error:", simpleError);
+        setError(`Database error: ${simpleError.message}`);
+        return;
       }
 
       // If simple query works, try the full query with joins
@@ -279,129 +279,143 @@ export default function VolunteerAssignmentsModal({
       const { data: shiftColumns, error: shiftError } = await supabase
         .from("shifts")
         .select("*")
-        .limit(1)
+        .limit(1);
 
-      console.log("Shift columns test:", { shiftColumns, shiftError })
+      console.log("Shift columns test:", { shiftColumns, shiftError });
 
       // Try a simpler join query without assuming column names
       const { data, error } = await supabase
         .from("volunteer_assignments")
-        .select(`
+        .select(
+          `
           *,
           profiles!volunteer_id!inner(id, email, first_name, last_name, phone),
           shifts!shift_id!inner(*)
-        `)
+        `
+        )
         .eq("event_id", eventId)
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false });
 
-      console.log("Full query result:", { data, error })
+      console.log("Full query result:", { data, error });
 
       if (error) {
-        console.error("Error fetching assignments:", error)
-        setError(`Query error: ${error.message}`)
-        return
+        console.error("Error fetching assignments:", error);
+        setError(`Query error: ${error.message}`);
+        return;
       }
 
-      setAssignments(data || [])
+      setAssignments(data || []);
     } catch (error) {
-      console.error("Unexpected error fetching assignments:", error)
-      setError(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error("Unexpected error fetching assignments:", error);
+      setError(
+        `Unexpected error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const updateAssignmentStatus = async (assignmentId: string, newStatus: string) => {
+  const updateAssignmentStatus = async (
+    assignmentId: string,
+    newStatus: string
+  ) => {
     try {
       const { error } = await supabase
         .from("volunteer_assignments")
         .update({ status: newStatus })
-        .eq("id", assignmentId)
+        .eq("id", assignmentId);
 
       if (error) {
-        console.error("Error updating assignment:", error)
-        setError("Failed to update assignment status")
-        return
+        console.error("Error updating assignment:", error);
+        setError("Failed to update assignment status");
+        return;
       }
 
-      setSuccess(`Assignment status updated to ${newStatus}`)
-      fetchAssignments()
+      setSuccess(`Assignment status updated to ${newStatus}`);
+      fetchAssignments();
     } catch (error) {
-      console.error("Error updating assignment:", error)
-      setError("Failed to update assignment status")
+      console.error("Error updating assignment:", error);
+      setError("Failed to update assignment status");
     }
-  }
+  };
 
   const removeAssignment = async (assignmentId: string) => {
-    if (!confirm('Are you sure you want to remove this volunteer from the shift?')) return
+    if (
+      !confirm("Are you sure you want to remove this volunteer from the shift?")
+    )
+      return;
 
     try {
       const { error } = await supabase
         .from("volunteer_assignments")
         .delete()
-        .eq("id", assignmentId)
+        .eq("id", assignmentId);
 
       if (error) {
-        console.error("Error removing assignment:", error)
-        setError("Failed to remove assignment")
-        return
+        console.error("Error removing assignment:", error);
+        setError("Failed to remove assignment");
+        return;
       }
 
-      setSuccess("Volunteer removed from shift")
-      fetchAssignments()
+      setSuccess("Volunteer removed from shift");
+      fetchAssignments();
     } catch (error) {
-      console.error("Error removing assignment:", error)
-      setError("Failed to remove assignment")
+      console.error("Error removing assignment:", error);
+      setError("Failed to remove assignment");
     }
-  }
+  };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const getStatusBadge = (status: string) => {
-    const baseStyle = styles.statusBadge
+    const baseStyle = styles.statusBadge;
     switch (status) {
-      case 'registered':
-        return { ...baseStyle, ...styles.registeredStatus }
-      case 'checked_in':
-        return { ...baseStyle, ...styles.checkedInStatus }
-      case 'no_show':
-        return { ...baseStyle, ...styles.noShowStatus }
+      case "registered":
+        return { ...baseStyle, ...styles.registeredStatus };
+      case "checked_in":
+        return { ...baseStyle, ...styles.checkedInStatus };
+      case "no_show":
+        return { ...baseStyle, ...styles.noShowStatus };
       default:
-        return baseStyle
+        return baseStyle;
     }
-  }
+  };
 
   const getSummaryStats = () => {
-    const total = assignments.length
-    const checkedIn = assignments.filter(a => a.status === 'checked_in').length
-    const noShow = assignments.filter(a => a.status === 'no_show').length
-    const registered = assignments.filter(a => a.status === 'registered').length
+    const total = assignments.length;
+    const checkedIn = assignments.filter(
+      (a) => a.status === "checked_in"
+    ).length;
+    const noShow = assignments.filter((a) => a.status === "no_show").length;
+    const registered = assignments.filter(
+      (a) => a.status === "registered"
+    ).length;
 
-    return { total, checkedIn, noShow, registered }
-  }
+    return { total, checkedIn, noShow, registered };
+  };
 
   useEffect(() => {
     if (isOpen) {
-      fetchAssignments()
+      fetchAssignments();
     }
-  }, [isOpen, eventId])
+  }, [isOpen, eventId]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
-  const summary = getSummaryStats()
+  const summary = getSummaryStats();
 
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -418,17 +432,9 @@ export default function VolunteerAssignmentsModal({
             <div style={styles.eventTitle}>{eventTitle}</div>
           </div>
 
-          {error && (
-            <div style={styles.error}>
-              {error}
-            </div>
-          )}
+          {error && <div style={styles.error}>{error}</div>}
 
-          {success && (
-            <div style={styles.success}>
-              {success}
-            </div>
-          )}
+          {success && <div style={styles.success}>{success}</div>}
 
           <div style={styles.summary}>
             <div style={styles.summaryCard}>
@@ -469,48 +475,58 @@ export default function VolunteerAssignmentsModal({
                 <div key={assignment.id} style={styles.assignmentRow}>
                   <div style={styles.volunteerInfo}>
                     <div style={styles.volunteerName}>
-                      {assignment.profiles.first_name} {assignment.profiles.last_name}
+                      {assignment.profiles.first_name}{" "}
+                      {assignment.profiles.last_name}
                     </div>
-                    <div style={styles.volunteerEmail}>{assignment.profiles.email}</div>
+                    <div style={styles.volunteerEmail}>
+                      {assignment.profiles.email}
+                    </div>
                   </div>
 
                   <div style={styles.shiftInfo}>
                     <div style={styles.shiftName}>
-                      {assignment.shifts.title || assignment.shifts.name || `Shift ${assignment.shifts.id.slice(0, 8)}`}
+                      {assignment.shifts.title ||
+                        assignment.shifts.name ||
+                        `Shift ${assignment.shifts.id.slice(0, 8)}`}
                     </div>
                     <div style={styles.shiftTime}>
-                      {formatTime(assignment.shifts.start_time)} - {formatTime(assignment.shifts.end_time)}
+                      {formatTime(assignment.shifts.start_time)} -{" "}
+                      {formatTime(assignment.shifts.end_time)}
                     </div>
                   </div>
 
                   <div>
                     <span style={getStatusBadge(assignment.status)}>
-                      {assignment.status.replace('_', ' ')}
+                      {assignment.status.replace("_", " ")}
                     </span>
                   </div>
 
-                  <div>
-                    {formatDate(assignment.created_at)}
-                  </div>
+                  <div>{formatDate(assignment.created_at)}</div>
 
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    {assignment.status === 'registered' && (
+                  <div
+                    style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}
+                  >
+                    {assignment.status === "registered" && (
                       <>
                         <button
                           style={{
                             ...styles.actionButton,
-                            ...styles.checkInButton
+                            ...styles.checkInButton,
                           }}
-                          onClick={() => updateAssignmentStatus(assignment.id, 'checked_in')}
+                          onClick={() =>
+                            updateAssignmentStatus(assignment.id, "checked_in")
+                          }
                         >
                           Check In
                         </button>
                         <button
                           style={{
                             ...styles.actionButton,
-                            ...styles.noShowButton
+                            ...styles.noShowButton,
                           }}
-                          onClick={() => updateAssignmentStatus(assignment.id, 'no_show')}
+                          onClick={() =>
+                            updateAssignmentStatus(assignment.id, "no_show")
+                          }
                         >
                           No Show
                         </button>
@@ -519,7 +535,7 @@ export default function VolunteerAssignmentsModal({
                     <button
                       style={{
                         ...styles.actionButton,
-                        ...styles.removeButton
+                        ...styles.removeButton,
                       }}
                       onClick={() => removeAssignment(assignment.id)}
                     >
@@ -533,5 +549,5 @@ export default function VolunteerAssignmentsModal({
         </div>
       </div>
     </div>
-  )
+  );
 }

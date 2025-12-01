@@ -1,13 +1,13 @@
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useState } from "react"
-import { useAuth } from "../../hooks/useAuth.tsx"
-import { theme } from "../../constants/theme"
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "../../../hooks/useAuth.tsx";
+import { theme } from "../../../constants/theme";
 
 export default function Navbar() {
-  const { user, isAdmin, signOut } = useAuth()
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, isAdmin, signOut } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -18,9 +18,9 @@ export default function Navbar() {
     }
   };
 
-  const isActivePath = (path: string) => location.pathname === path
-  
-  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
+  const isActivePath = (path: string) => location.pathname === path;
+
+  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
   const styles = {
     nav: {
@@ -30,7 +30,7 @@ export default function Navbar() {
       minHeight: "72px",
       padding: "1rem 2rem",
       backgroundColor: theme.colors.white,
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
       borderBottom: `1px solid ${theme.colors.neutral[200]}`,
       position: "sticky" as const,
       top: 0,
@@ -47,10 +47,10 @@ export default function Navbar() {
       fontSize: theme.typography.fontSize.xl,
       fontWeight: theme.typography.fontWeight.bold,
       transition: theme.transitions.base,
-      letterSpacing: '-0.5px',
+      letterSpacing: "-0.5px",
     } as React.CSSProperties,
     brandLogo: {
-      fontSize: '1.75rem',
+      fontSize: "1.75rem",
     } as React.CSSProperties,
     hamburger: {
       display: "none",
@@ -181,49 +181,58 @@ export default function Navbar() {
           <img
             src="/harrychaplin.png"
             alt="Harry Chapin Food Bank of SWFL"
-            style={{ height: 56, display: 'block' }}
+            style={{ height: 56, display: "block" }}
           />
         </Link>
 
         {/* Hamburger Menu */}
-        <button 
-          style={styles.hamburger} 
+        <button
+          style={styles.hamburger}
           onClick={toggleMobileMenu}
           className="mobile-hamburger"
           aria-label="Toggle menu"
         >
-          <span style={{
-            ...styles.hamburgerLine,
-            ...(mobileMenuOpen ? styles.hamburgerLineOpen1 : {})
-          }}></span>
-          <span style={{
-            ...styles.hamburgerLine,
-            ...(mobileMenuOpen ? styles.hamburgerLineOpen2 : {})
-          }}></span>
-          <span style={{
-            ...styles.hamburgerLine,
-            ...(mobileMenuOpen ? styles.hamburgerLineOpen3 : {})
-          }}></span>
+          <span
+            style={{
+              ...styles.hamburgerLine,
+              ...(mobileMenuOpen ? styles.hamburgerLineOpen1 : {}),
+            }}
+          ></span>
+          <span
+            style={{
+              ...styles.hamburgerLine,
+              ...(mobileMenuOpen ? styles.hamburgerLineOpen2 : {}),
+            }}
+          ></span>
+          <span
+            style={{
+              ...styles.hamburgerLine,
+              ...(mobileMenuOpen ? styles.hamburgerLineOpen3 : {}),
+            }}
+          ></span>
         </button>
 
         {/* Center Navigation - Desktop */}
         {user && (
           <div style={styles.navCenter} className="nav-center-desktop">
-            <Link to="/dashboard" style={getLinkStyle('/dashboard')}>
+            <Link to="/dashboard" style={getLinkStyle("/dashboard")}>
               Dashboard
             </Link>
-            <Link to="/events" style={getLinkStyle('/events')}>
+            <Link to="/events" style={getLinkStyle("/events")}>
               Events
             </Link>
-            <Link to="/profile" style={getLinkStyle('/profile')}>
+            <Link to="/profile" style={getLinkStyle("/profile")}>
               Profile
             </Link>
             {isAdmin && (
               <>
-                <Link to="/admin/dashboard" style={getLinkStyle('/admin/dashboard')}>
+                <Link
+                  to="/admin/dashboard"
+                  style={getLinkStyle("/admin/dashboard")}
+                >
                   Admin
                 </Link>
-                <Link to="/reports" style={getLinkStyle('/reports')}>
+                <Link to="/reports" style={getLinkStyle("/reports")}>
                   Reports
                 </Link>
               </>
@@ -233,10 +242,10 @@ export default function Navbar() {
 
         {!user && (
           <div style={styles.navCenter} className="nav-center-desktop">
-            <Link to="/" style={getLinkStyle('/')}>
+            <Link to="/" style={getLinkStyle("/")}>
               Home
             </Link>
-            <Link to="/events" style={getLinkStyle('/events')}>
+            <Link to="/events" style={getLinkStyle("/events")}>
               Opportunities
             </Link>
           </div>
@@ -244,69 +253,74 @@ export default function Navbar() {
 
         {/* Right Actions - Desktop */}
         <div style={styles.navRight} className="nav-right-desktop">
-        {user ? (
-          <>
-            <div style={styles.userMenu}>
-              <div style={styles.avatar}>
-                {user.email?.[0].toUpperCase() || 'U'}
+          {user ? (
+            <>
+              <div style={styles.userMenu}>
+                <div style={styles.avatar}>
+                  {user.email?.[0].toUpperCase() || "U"}
+                </div>
+                <span
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    fontWeight: theme.typography.fontWeight.medium,
+                    color: theme.colors.text.primary,
+                  }}
+                >
+                  {user.email?.split("@")[0] || "User"}
+                </span>
               </div>
-              <span style={{
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.medium,
-                color: theme.colors.text.primary,
-              }}>
-                {user.email?.split('@')[0] || 'User'}
-              </span>
-            </div>
-            <button 
-              onClick={handleLogout}
-              style={{...styles.button, ...styles.buttonSecondary}}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = theme.colors.neutral[100]
-                e.currentTarget.style.borderColor = theme.colors.neutral[400]
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.borderColor = theme.colors.neutral[300]
-              }}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">
-              <button 
-                style={{...styles.button, ...styles.buttonSecondary}}
+              <button
+                onClick={handleLogout}
+                style={{ ...styles.button, ...styles.buttonSecondary }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.colors.neutral[100]
+                  e.currentTarget.style.backgroundColor =
+                    theme.colors.neutral[100];
+                  e.currentTarget.style.borderColor = theme.colors.neutral[400];
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.backgroundColor = "transparent";
+                  e.currentTarget.style.borderColor = theme.colors.neutral[300];
                 }}
               >
-                Login
+                Logout
               </button>
-            </Link>
-            <Link to="/signup">
-              <button 
-                style={styles.button}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#c72e3a'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = theme.shadows.md
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = theme.colors.primary
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = theme.shadows.sm
-                }}
-              >
-                Sign Up
-              </button>
-            </Link>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <Link to="/login">
+                <button
+                  style={{ ...styles.button, ...styles.buttonSecondary }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.neutral[100];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  Login
+                </button>
+              </Link>
+              <Link to="/signup">
+                <button
+                  style={styles.button}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#c72e3a";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = theme.shadows.md;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.primary;
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = theme.shadows.sm;
+                  }}
+                >
+                  Sign Up
+                </button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu */}
@@ -314,22 +328,45 @@ export default function Navbar() {
           <>
             {/* Center Navigation - Mobile */}
             {user && (
-              <div style={{...styles.navCenterMobile, display: 'flex'}} className="nav-center-mobile">
-                <Link to="/dashboard" style={getLinkStyle('/dashboard')} onClick={toggleMobileMenu}>
+              <div
+                style={{ ...styles.navCenterMobile, display: "flex" }}
+                className="nav-center-mobile"
+              >
+                <Link
+                  to="/dashboard"
+                  style={getLinkStyle("/dashboard")}
+                  onClick={toggleMobileMenu}
+                >
                   Dashboard
                 </Link>
-                <Link to="/events" style={getLinkStyle('/events')} onClick={toggleMobileMenu}>
+                <Link
+                  to="/events"
+                  style={getLinkStyle("/events")}
+                  onClick={toggleMobileMenu}
+                >
                   Events
                 </Link>
-                <Link to="/profile" style={getLinkStyle('/profile')} onClick={toggleMobileMenu}>
+                <Link
+                  to="/profile"
+                  style={getLinkStyle("/profile")}
+                  onClick={toggleMobileMenu}
+                >
                   Profile
                 </Link>
                 {isAdmin && (
                   <>
-                    <Link to="/admin/dashboard" style={getLinkStyle('/admin/dashboard')} onClick={toggleMobileMenu}>
+                    <Link
+                      to="/admin/dashboard"
+                      style={getLinkStyle("/admin/dashboard")}
+                      onClick={toggleMobileMenu}
+                    >
                       Admin
                     </Link>
-                    <Link to="/reports" style={getLinkStyle('/reports')} onClick={toggleMobileMenu}>
+                    <Link
+                      to="/reports"
+                      style={getLinkStyle("/reports")}
+                      onClick={toggleMobileMenu}
+                    >
                       Reports
                     </Link>
                   </>
@@ -338,52 +375,85 @@ export default function Navbar() {
             )}
 
             {!user && (
-              <div style={{...styles.navCenterMobile, display: 'flex'}} className="nav-center-mobile">
-                <Link to="/" style={getLinkStyle('/')} onClick={toggleMobileMenu}>
+              <div
+                style={{ ...styles.navCenterMobile, display: "flex" }}
+                className="nav-center-mobile"
+              >
+                <Link
+                  to="/"
+                  style={getLinkStyle("/")}
+                  onClick={toggleMobileMenu}
+                >
                   Home
                 </Link>
-                <Link to="/events" style={getLinkStyle('/events')} onClick={toggleMobileMenu}>
+                <Link
+                  to="/events"
+                  style={getLinkStyle("/events")}
+                  onClick={toggleMobileMenu}
+                >
                   Opportunities
                 </Link>
               </div>
             )}
 
             {/* Right Actions - Mobile */}
-            <div style={{...styles.navRightMobile, display: 'flex'}} className="nav-right-mobile">
+            <div
+              style={{ ...styles.navRightMobile, display: "flex" }}
+              className="nav-right-mobile"
+            >
               {user ? (
                 <>
                   <div style={styles.userMenu}>
                     <div style={styles.avatar}>
-                      {user.email?.[0].toUpperCase() || 'U'}
+                      {user.email?.[0].toUpperCase() || "U"}
                     </div>
-                    <span style={{
-                      fontSize: theme.typography.fontSize.sm,
-                      fontWeight: theme.typography.fontWeight.medium,
-                      color: theme.colors.text.primary,
-                    }}>
-                      {user.email?.split('@')[0] || 'User'}
+                    <span
+                      style={{
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.medium,
+                        color: theme.colors.text.primary,
+                      }}
+                    >
+                      {user.email?.split("@")[0] || "User"}
                     </span>
                   </div>
-                  <button 
-                    onClick={() => { handleLogout(); toggleMobileMenu(); }}
-                    style={{...styles.button, ...styles.buttonSecondary, width: '100%'}}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      toggleMobileMenu();
+                    }}
+                    style={{
+                      ...styles.button,
+                      ...styles.buttonSecondary,
+                      width: "100%",
+                    }}
                   >
                     Logout
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" style={{width: '100%'}} onClick={toggleMobileMenu}>
-                    <button 
-                      style={{...styles.button, ...styles.buttonSecondary, width: '100%'}}
+                  <Link
+                    to="/login"
+                    style={{ width: "100%" }}
+                    onClick={toggleMobileMenu}
+                  >
+                    <button
+                      style={{
+                        ...styles.button,
+                        ...styles.buttonSecondary,
+                        width: "100%",
+                      }}
                     >
                       Login
                     </button>
                   </Link>
-                  <Link to="/signup" style={{width: '100%'}} onClick={toggleMobileMenu}>
-                    <button 
-                      style={{...styles.button, width: '100%'}}
-                    >
+                  <Link
+                    to="/signup"
+                    style={{ width: "100%" }}
+                    onClick={toggleMobileMenu}
+                  >
+                    <button style={{ ...styles.button, width: "100%" }}>
                       Sign Up
                     </button>
                   </Link>
@@ -444,5 +514,5 @@ export default function Navbar() {
         }
       `}</style>
     </>
-  )
+  );
 }

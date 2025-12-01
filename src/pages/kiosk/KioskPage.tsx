@@ -1,342 +1,377 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../../services/supabaseClient"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { theme } from "../../constants/theme";
 
 interface Volunteer {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
 }
 
 interface Event {
-  id: string
-  title: string
-  start_date: string
-  end_date: string
-  location: string
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  location: string;
 }
 
 interface Shift {
-  id: string
-  title: string
-  start_time: string
-  end_time: string
-  event_id: string
-  events: Event
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  event_id: string;
+  events: Event;
 }
 
 interface Assignment {
-  id: string
-  volunteer_id: string
-  shift_id: string
-  status: string
-  created_at: string
-  volunteers: Volunteer
-  shifts: Shift
+  id: string;
+  volunteer_id: string;
+  shift_id: string;
+  status: string;
+  created_at: string;
+  volunteers: Volunteer;
+  shifts: Shift;
 }
 
 export default function KioskPage() {
-  const [volunteerEmail, setVolunteerEmail] = useState("")
-  const [volunteerNumber, setVolunteerNumber] = useState("")
-  const [lookupMethod, setLookupMethod] = useState<"email" | "number">("number")
-  const [volunteer, setVolunteer] = useState<Volunteer | null>(null)
-  const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [volunteerEmail, setVolunteerEmail] = useState("");
+  const [volunteerNumber, setVolunteerNumber] = useState("");
+  const [lookupMethod, setLookupMethod] = useState<"email" | "number">(
+    "number"
+  );
+  const [volunteer, setVolunteer] = useState<Volunteer | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleVolunteerLookup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (lookupMethod === "email" && !volunteerEmail.trim()) return
-    if (lookupMethod === "number" && !volunteerNumber.trim()) return
+    e.preventDefault();
 
-    setLoading(true)
-    setMessage(null)
+    if (lookupMethod === "email" && !volunteerEmail.trim()) return;
+    if (lookupMethod === "number" && !volunteerNumber.trim()) return;
+
+    setLoading(true);
+    setMessage(null);
 
     try {
       let query = supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, phone, volunteer_number, status')
-      
+        .from("profiles")
+        .select(
+          "id, first_name, last_name, email, phone, volunteer_number, status"
+        );
+
       // Look up by email or volunteer number
       if (lookupMethod === "email") {
-        query = query.eq('email', volunteerEmail.trim().toLowerCase())
+        query = query.eq("email", volunteerEmail.trim().toLowerCase());
       } else {
         // Look up by volunteer number (case-insensitive)
-        const searchNumber = volunteerNumber.trim().toUpperCase()
-        query = query.ilike('volunteer_number', searchNumber)
+        const searchNumber = volunteerNumber.trim().toUpperCase();
+        query = query.ilike("volunteer_number", searchNumber);
       }
-      
-      const { data: volunteerData, error } = await query.single()
+
+      const { data: volunteerData, error } = await query.single();
 
       if (error || !volunteerData) {
-        console.error('Volunteer lookup error:', error, 'Search:', lookupMethod === "email" ? volunteerEmail : volunteerNumber)
-        const errorMsg = lookupMethod === "email" 
-          ? 'Volunteer not found. Please check your email address.'
-          : `Volunteer not found with number: ${volunteerNumber.trim().toUpperCase()}. Please check your volunteer number or try using your email address.`
-        setMessage({ type: 'error', text: errorMsg })
-        setVolunteer(null)
-        setAssignments([])
-        return
+        console.error(
+          "Volunteer lookup error:",
+          error,
+          "Search:",
+          lookupMethod === "email" ? volunteerEmail : volunteerNumber
+        );
+        const errorMsg =
+          lookupMethod === "email"
+            ? "Volunteer not found. Please check your email address."
+            : `Volunteer not found with number: ${volunteerNumber.trim().toUpperCase()}. Please check your volunteer number or try using your email address.`;
+        setMessage({ type: "error", text: errorMsg });
+        setVolunteer(null);
+        setAssignments([]);
+        return;
       }
 
       // Check if volunteer is active
-      if (volunteerData.status !== 'active') {
-        setMessage({ type: 'error', text: `Volunteer account is ${volunteerData.status}. Please contact the administrator.` })
-        setVolunteer(null)
-        setAssignments([])
-        return
+      if (volunteerData.status !== "active") {
+        setMessage({
+          type: "error",
+          text: `Volunteer account is ${volunteerData.status}. Please contact the administrator.`,
+        });
+        setVolunteer(null);
+        setAssignments([]);
+        return;
       }
 
       // If volunteer number lookup but no number in database, suggest using email
       if (lookupMethod === "number" && !volunteerData.volunteer_number) {
-        setMessage({ type: 'error', text: 'Volunteer number not found. This account may not have been assigned a volunteer number yet. Please try using your email address instead.' })
-        setVolunteer(null)
-        setAssignments([])
-        return
+        setMessage({
+          type: "error",
+          text: "Volunteer number not found. This account may not have been assigned a volunteer number yet. Please try using your email address instead.",
+        });
+        setVolunteer(null);
+        setAssignments([]);
+        return;
       }
 
-      setVolunteer(volunteerData)
+      setVolunteer(volunteerData);
 
       // Get today's assignments for this volunteer
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Date().toISOString().split("T")[0];
       const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from('volunteer_assignments')
-        .select(`
+        .from("volunteer_assignments")
+        .select(
+          `
           *,
           profiles!volunteer_id(id, first_name, last_name, email, phone),
           shifts!shift_id(
             *,
             events!event_id(*)
           )
-        `)
-        .eq('volunteer_id', volunteerData.id)
-        .in('status', ['registered', 'checked_in'])
-        .gte('created_at', today)
+        `
+        )
+        .eq("volunteer_id", volunteerData.id)
+        .in("status", ["registered", "checked_in"])
+        .gte("created_at", today);
 
       if (assignmentsError) {
-        console.error('Error fetching assignments:', assignmentsError)
-        setMessage({ type: 'error', text: 'Error loading volunteer assignments.' })
-        return
+        console.error("Error fetching assignments:", assignmentsError);
+        setMessage({
+          type: "error",
+          text: "Error loading volunteer assignments.",
+        });
+        return;
       }
 
-      setAssignments(assignmentsData || [])
-      
+      setAssignments(assignmentsData || []);
+
       if (!assignmentsData || assignmentsData.length === 0) {
-        setMessage({ type: 'error', text: 'No volunteer assignments found for today.' })
+        setMessage({
+          type: "error",
+          text: "No volunteer assignments found for today.",
+        });
       }
     } catch (error) {
-      console.error('Error:', error)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      console.error("Error:", error);
+      setMessage({ type: "error", text: "An unexpected error occurred." });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCheckIn = async (assignment: Assignment) => {
-    setLoading(true)
-    setMessage(null)
+    setLoading(true);
+    setMessage(null);
 
     try {
       const { error } = await supabase
-        .from('volunteer_assignments')
-        .update({ 
-          status: 'checked_in',
-          checked_in_at: new Date().toISOString()
+        .from("volunteer_assignments")
+        .update({
+          status: "checked_in",
+          checked_in_at: new Date().toISOString(),
         })
-        .eq('id', assignment.id)
+        .eq("id", assignment.id);
 
       if (error) {
-        console.error('Error checking in:', error)
-        setMessage({ type: 'error', text: 'Error checking in. Please try again.' })
-        return
+        console.error("Error checking in:", error);
+        setMessage({
+          type: "error",
+          text: "Error checking in. Please try again.",
+        });
+        return;
       }
 
       // Update local state
-      setAssignments(prev => 
-        prev.map(a => 
-          a.id === assignment.id 
-            ? { ...a, status: 'checked_in' }
-            : a
+      setAssignments((prev) =>
+        prev.map((a) =>
+          a.id === assignment.id ? { ...a, status: "checked_in" } : a
         )
-      )
+      );
 
-      setMessage({ type: 'success', text: `Successfully checked in for ${assignment.shifts.events.title}!` })
+      setMessage({
+        type: "success",
+        text: `Successfully checked in for ${assignment.shifts.events.title}!`,
+      });
     } catch (error) {
-      console.error('Error:', error)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      console.error("Error:", error);
+      setMessage({ type: "error", text: "An unexpected error occurred." });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCheckOut = async (assignment: Assignment) => {
-    setLoading(true)
-    setMessage(null)
+    setLoading(true);
+    setMessage(null);
 
     try {
       const { error } = await supabase
-        .from('volunteer_assignments')
-        .update({ 
-          status: 'completed',
-          checked_out_at: new Date().toISOString()
+        .from("volunteer_assignments")
+        .update({
+          status: "completed",
+          checked_out_at: new Date().toISOString(),
         })
-        .eq('id', assignment.id)
+        .eq("id", assignment.id);
 
       if (error) {
-        console.error('Error checking out:', error)
-        setMessage({ type: 'error', text: 'Error checking out. Please try again.' })
-        return
+        console.error("Error checking out:", error);
+        setMessage({
+          type: "error",
+          text: "Error checking out. Please try again.",
+        });
+        return;
       }
 
       // Update local state
-      setAssignments(prev => 
-        prev.map(a => 
-          a.id === assignment.id 
-            ? { ...a, status: 'completed' }
-            : a
+      setAssignments((prev) =>
+        prev.map((a) =>
+          a.id === assignment.id ? { ...a, status: "completed" } : a
         )
-      )
+      );
 
-      setMessage({ type: 'success', text: `Successfully checked out from ${assignment.shifts.events.title}!` })
+      setMessage({
+        type: "success",
+        text: `Successfully checked out from ${assignment.shifts.events.title}!`,
+      });
     } catch (error) {
-      console.error('Error:', error)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      console.error("Error:", error);
+      setMessage({ type: "error", text: "An unexpected error occurred." });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const resetKiosk = () => {
-    setVolunteerEmail("")
-    setVolunteerNumber("")
-    setVolunteer(null)
-    setAssignments([])
-    setMessage(null)
-  }
+    setVolunteerEmail("");
+    setVolunteerNumber("");
+    setVolunteer(null);
+    setAssignments([]);
+    setMessage(null);
+  };
 
   const styles = {
     container: {
-      minHeight: '100vh',
+      minHeight: "100vh",
       backgroundColor: theme.colors.background,
       fontFamily: theme.typography.fontFamily,
-      padding: '2rem',
+      padding: "2rem",
     } as React.CSSProperties,
 
     header: {
-      textAlign: 'center' as const,
-      marginBottom: '3rem',
+      textAlign: "center" as const,
+      marginBottom: "3rem",
     } as React.CSSProperties,
 
     title: {
-      fontSize: theme.typography.fontSize['4xl'],
+      fontSize: theme.typography.fontSize["4xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.primary,
-      marginBottom: '1rem',
+      marginBottom: "1rem",
     } as React.CSSProperties,
 
     subtitle: {
       fontSize: theme.typography.fontSize.lg,
       color: theme.colors.text.secondary,
-      marginBottom: '2rem',
+      marginBottom: "2rem",
     } as React.CSSProperties,
 
     timeDisplay: {
       fontSize: theme.typography.fontSize.xl,
       fontWeight: theme.typography.fontWeight.semibold,
       color: theme.colors.text.primary,
-      backgroundColor: 'white',
-      padding: '1rem 2rem',
+      backgroundColor: "white",
+      padding: "1rem 2rem",
       borderRadius: theme.borderRadius.lg,
       boxShadow: theme.shadows.md,
-      display: 'inline-block',
+      display: "inline-block",
     } as React.CSSProperties,
 
     form: {
-      maxWidth: '500px',
-      margin: '0 auto 3rem',
-      backgroundColor: 'white',
-      padding: '2rem',
+      maxWidth: "500px",
+      margin: "0 auto 3rem",
+      backgroundColor: "white",
+      padding: "2rem",
       borderRadius: theme.borderRadius.lg,
       boxShadow: theme.shadows.lg,
     } as React.CSSProperties,
 
     formGroup: {
-      marginBottom: '1.5rem',
+      marginBottom: "1.5rem",
     } as React.CSSProperties,
 
     label: {
-      display: 'block',
+      display: "block",
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
       color: theme.colors.text.primary,
-      marginBottom: '0.5rem',
+      marginBottom: "0.5rem",
     } as React.CSSProperties,
 
     input: {
-      width: '100%',
-      padding: '1rem',
+      width: "100%",
+      padding: "1rem",
       border: `2px solid ${theme.colors.neutral[300]}`,
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.lg,
       fontFamily: theme.typography.fontFamily,
-      transition: 'border-color 0.2s ease',
-      boxSizing: 'border-box' as const,
+      transition: "border-color 0.2s ease",
+      boxSizing: "border-box" as const,
     } as React.CSSProperties,
 
     button: {
-      width: '100%',
+      width: "100%",
       backgroundColor: theme.colors.primary,
-      color: 'white',
-      border: 'none',
-      padding: '1rem 2rem',
+      color: "white",
+      border: "none",
+      padding: "1rem 2rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.lg,
       fontWeight: theme.typography.fontWeight.semibold,
-      cursor: 'pointer',
-      transition: 'background-color 0.2s ease',
+      cursor: "pointer",
+      transition: "background-color 0.2s ease",
     } as React.CSSProperties,
 
     volunteerInfo: {
-      backgroundColor: 'white',
-      padding: '2rem',
+      backgroundColor: "white",
+      padding: "2rem",
       borderRadius: theme.borderRadius.lg,
       boxShadow: theme.shadows.md,
-      marginBottom: '2rem',
+      marginBottom: "2rem",
     } as React.CSSProperties,
 
     volunteerName: {
-      fontSize: theme.typography.fontSize['2xl'],
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.text.primary,
-      marginBottom: '0.5rem',
+      marginBottom: "0.5rem",
     } as React.CSSProperties,
 
     volunteerEmail: {
       fontSize: theme.typography.fontSize.base,
       color: theme.colors.text.secondary,
-      marginBottom: '1rem',
+      marginBottom: "1rem",
     } as React.CSSProperties,
 
     assignmentsList: {
-      display: 'grid',
-      gap: '1rem',
+      display: "grid",
+      gap: "1rem",
     } as React.CSSProperties,
 
     assignmentCard: {
-      backgroundColor: 'white',
-      padding: '1.5rem',
+      backgroundColor: "white",
+      padding: "1.5rem",
       borderRadius: theme.borderRadius.lg,
       boxShadow: theme.shadows.md,
       border: `2px solid ${theme.colors.neutral[200]}`,
@@ -346,72 +381,72 @@ export default function KioskPage() {
       fontSize: theme.typography.fontSize.xl,
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.text.primary,
-      marginBottom: '0.5rem',
+      marginBottom: "0.5rem",
     } as React.CSSProperties,
 
     shiftInfo: {
       fontSize: theme.typography.fontSize.base,
       color: theme.colors.text.secondary,
-      marginBottom: '1rem',
+      marginBottom: "1rem",
     } as React.CSSProperties,
 
     statusBadge: {
-      display: 'inline-block',
-      padding: '0.5rem 1rem',
+      display: "inline-block",
+      padding: "0.5rem 1rem",
       borderRadius: theme.borderRadius.full,
       fontSize: theme.typography.fontSize.sm,
       fontWeight: theme.typography.fontWeight.medium,
-      textTransform: 'uppercase' as const,
-      marginBottom: '1rem',
+      textTransform: "uppercase" as const,
+      marginBottom: "1rem",
     } as React.CSSProperties,
 
     actionButtons: {
-      display: 'flex',
-      gap: '1rem',
+      display: "flex",
+      gap: "1rem",
     } as React.CSSProperties,
 
     checkInButton: {
       flex: 1,
       backgroundColor: theme.colors.success,
-      color: 'white',
-      border: 'none',
-      padding: '0.75rem 1.5rem',
+      color: "white",
+      border: "none",
+      padding: "0.75rem 1.5rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'background-color 0.2s ease',
+      cursor: "pointer",
+      transition: "background-color 0.2s ease",
     } as React.CSSProperties,
 
     checkOutButton: {
       flex: 1,
       backgroundColor: theme.colors.warning,
-      color: 'white',
-      border: 'none',
-      padding: '0.75rem 1.5rem',
+      color: "white",
+      border: "none",
+      padding: "0.75rem 1.5rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'background-color 0.2s ease',
+      cursor: "pointer",
+      transition: "background-color 0.2s ease",
     } as React.CSSProperties,
 
     resetButton: {
       backgroundColor: theme.colors.neutral[100],
       color: theme.colors.text.primary,
       border: `2px solid ${theme.colors.neutral[300]}`,
-      padding: '0.75rem 1.5rem',
+      padding: "0.75rem 1.5rem",
       borderRadius: theme.borderRadius.base,
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
+      cursor: "pointer",
+      transition: "all 0.2s ease",
     } as React.CSSProperties,
 
     message: {
-      padding: '1rem',
+      padding: "1rem",
       borderRadius: theme.borderRadius.base,
-      marginBottom: '1rem',
+      marginBottom: "1rem",
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
     } as React.CSSProperties,
@@ -429,18 +464,18 @@ export default function KioskPage() {
     } as React.CSSProperties,
 
     loading: {
-      textAlign: 'center' as const,
-      padding: '2rem',
+      textAlign: "center" as const,
+      padding: "2rem",
       fontSize: theme.typography.fontSize.lg,
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
 
     emptyState: {
-      textAlign: 'center' as const,
-      padding: '3rem',
+      textAlign: "center" as const,
+      padding: "3rem",
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
-  }
+  };
 
   return (
     <div style={styles.container}>
@@ -451,24 +486,28 @@ export default function KioskPage() {
           Welcome! Please enter your email to check in for your volunteer shift.
         </p>
         <div style={styles.timeDisplay}>
-          {currentTime.toLocaleString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+          {currentTime.toLocaleString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
           })}
         </div>
       </div>
 
       {/* Message Display */}
       {message && (
-        <div style={{
-          ...styles.message,
-          ...(message.type === 'success' ? styles.successMessage : styles.errorMessage)
-        }}>
+        <div
+          style={{
+            ...styles.message,
+            ...(message.type === "success"
+              ? styles.successMessage
+              : styles.errorMessage),
+          }}
+        >
           {message.text}
         </div>
       )}
@@ -478,21 +517,25 @@ export default function KioskPage() {
         <form style={styles.form} onSubmit={handleVolunteerLookup}>
           <div style={styles.formGroup}>
             <label style={styles.label}>Lookup Method</label>
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
               <button
                 type="button"
                 onClick={() => {
-                  setLookupMethod("number")
-                  setVolunteerEmail("")
+                  setLookupMethod("number");
+                  setVolunteerEmail("");
                 }}
                 style={{
                   flex: 1,
-                  padding: '0.75rem',
+                  padding: "0.75rem",
                   border: `2px solid ${lookupMethod === "number" ? theme.colors.primary : theme.colors.neutral[300]}`,
                   borderRadius: theme.borderRadius.base,
-                  backgroundColor: lookupMethod === "number" ? theme.colors.primary : 'white',
-                  color: lookupMethod === "number" ? 'white' : theme.colors.text.primary,
-                  cursor: 'pointer',
+                  backgroundColor:
+                    lookupMethod === "number" ? theme.colors.primary : "white",
+                  color:
+                    lookupMethod === "number"
+                      ? "white"
+                      : theme.colors.text.primary,
+                  cursor: "pointer",
                   fontWeight: theme.typography.fontWeight.medium,
                 }}
               >
@@ -501,17 +544,21 @@ export default function KioskPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setLookupMethod("email")
-                  setVolunteerNumber("")
+                  setLookupMethod("email");
+                  setVolunteerNumber("");
                 }}
                 style={{
                   flex: 1,
-                  padding: '0.75rem',
+                  padding: "0.75rem",
                   border: `2px solid ${lookupMethod === "email" ? theme.colors.primary : theme.colors.neutral[300]}`,
                   borderRadius: theme.borderRadius.base,
-                  backgroundColor: lookupMethod === "email" ? theme.colors.primary : 'white',
-                  color: lookupMethod === "email" ? 'white' : theme.colors.text.primary,
-                  cursor: 'pointer',
+                  backgroundColor:
+                    lookupMethod === "email" ? theme.colors.primary : "white",
+                  color:
+                    lookupMethod === "email"
+                      ? "white"
+                      : theme.colors.text.primary,
+                  cursor: "pointer",
                   fontWeight: theme.typography.fontWeight.medium,
                 }}
               >
@@ -521,14 +568,18 @@ export default function KioskPage() {
           </div>
           <div style={styles.formGroup}>
             <label style={styles.label}>
-              {lookupMethod === "number" ? "Enter Your Volunteer Number" : "Enter Your Email Address"}
+              {lookupMethod === "number"
+                ? "Enter Your Volunteer Number"
+                : "Enter Your Email Address"}
             </label>
             {lookupMethod === "number" ? (
               <input
                 type="text"
                 style={styles.input}
                 value={volunteerNumber}
-                onChange={(e) => setVolunteerNumber(e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  setVolunteerNumber(e.target.value.toUpperCase())
+                }
                 placeholder="V-20250115-0001"
                 required
                 disabled={loading}
@@ -547,12 +598,8 @@ export default function KioskPage() {
               />
             )}
           </div>
-          <button
-            type="submit"
-            style={styles.button}
-            disabled={loading}
-          >
-            {loading ? 'Looking up...' : 'Find My Assignments'}
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Looking up..." : "Find My Assignments"}
           </button>
         </form>
       )}
@@ -566,19 +613,18 @@ export default function KioskPage() {
             </h2>
             <p style={styles.volunteerEmail}>{volunteer.email}</p>
             {(volunteer as any).volunteer_number && (
-              <p style={{ 
-                fontSize: theme.typography.fontSize.base,
-                color: theme.colors.text.secondary,
-                marginTop: '0.5rem',
-                fontWeight: theme.typography.fontWeight.semibold
-              }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.base,
+                  color: theme.colors.text.secondary,
+                  marginTop: "0.5rem",
+                  fontWeight: theme.typography.fontWeight.semibold,
+                }}
+              >
                 Volunteer #: {(volunteer as any).volunteer_number}
               </p>
             )}
-            <button
-              style={styles.resetButton}
-              onClick={resetKiosk}
-            >
+            <button style={styles.resetButton} onClick={resetKiosk}>
               Look Up Different Volunteer
             </button>
           </div>
@@ -592,31 +638,49 @@ export default function KioskPage() {
                     {assignment.shifts.events.title}
                   </h3>
                   <p style={styles.shiftInfo}>
-                    <strong>Shift:</strong> {assignment.shifts.title}<br />
-                    <strong>Time:</strong> {new Date(assignment.shifts.start_time).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })} - {new Date(assignment.shifts.end_time).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}<br />
-                    <strong>Location:</strong> {assignment.shifts.events.location}
+                    <strong>Shift:</strong> {assignment.shifts.title}
+                    <br />
+                    <strong>Time:</strong>{" "}
+                    {new Date(assignment.shifts.start_time).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}{" "}
+                    -{" "}
+                    {new Date(assignment.shifts.end_time).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                    <br />
+                    <strong>Location:</strong>{" "}
+                    {assignment.shifts.events.location}
                   </p>
-                  
-                  <div style={{
-                    ...styles.statusBadge,
-                    backgroundColor: assignment.status === 'checked_in' 
-                      ? `${theme.colors.success}20` 
-                      : `${theme.colors.info}20`,
-                    color: assignment.status === 'checked_in' 
-                      ? theme.colors.success 
-                      : theme.colors.info,
-                  }}>
-                    {assignment.status === 'checked_in' ? 'Checked In' : 'Registered'}
+
+                  <div
+                    style={{
+                      ...styles.statusBadge,
+                      backgroundColor:
+                        assignment.status === "checked_in"
+                          ? `${theme.colors.success}20`
+                          : `${theme.colors.info}20`,
+                      color:
+                        assignment.status === "checked_in"
+                          ? theme.colors.success
+                          : theme.colors.info,
+                    }}
+                  >
+                    {assignment.status === "checked_in"
+                      ? "Checked In"
+                      : "Registered"}
                   </div>
 
                   <div style={styles.actionButtons}>
-                    {assignment.status === 'registered' && (
+                    {assignment.status === "registered" && (
                       <button
                         style={styles.checkInButton}
                         onClick={() => handleCheckIn(assignment)}
@@ -625,7 +689,7 @@ export default function KioskPage() {
                         Check In
                       </button>
                     )}
-                    {assignment.status === 'checked_in' && (
+                    {assignment.status === "checked_in" && (
                       <button
                         style={styles.checkOutButton}
                         onClick={() => handleCheckOut(assignment)}
@@ -641,7 +705,9 @@ export default function KioskPage() {
           ) : (
             <div style={styles.emptyState}>
               <h3>No volunteer assignments found for today.</h3>
-              <p>Please contact a staff member if you believe this is an error.</p>
+              <p>
+                Please contact a staff member if you believe this is an error.
+              </p>
             </div>
           )}
         </div>
@@ -649,15 +715,17 @@ export default function KioskPage() {
 
       {loading && (
         <div style={styles.loading}>
-          <div style={{
-            display: 'inline-block',
-            width: '40px',
-            height: '40px',
-            border: `3px solid ${theme.colors.neutral[300]}`,
-            borderTop: `3px solid ${theme.colors.primary}`,
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }}></div>
+          <div
+            style={{
+              display: "inline-block",
+              width: "40px",
+              height: "40px",
+              border: `3px solid ${theme.colors.neutral[300]}`,
+              borderTop: `3px solid ${theme.colors.primary}`,
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          ></div>
           <style>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }
@@ -667,5 +735,5 @@ export default function KioskPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

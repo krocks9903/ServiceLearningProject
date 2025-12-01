@@ -1,57 +1,57 @@
-import { useState, useEffect } from "react"
-import { supabase } from "../../services/supabaseClient"
-import { theme } from "../../constants/theme"
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { theme } from "../../constants/theme";
 
 interface Event {
-  id: string
-  title: string
-  description: string
-  location: string
-  start_date: string
-  end_date: string
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  start_date: string;
+  end_date: string;
 }
 
 interface Shift {
-  id: string
-  event_id: string
-  title: string
-  description: string
-  start_time: string
-  end_time: string
-  capacity: number | null
-  location?: string
-  volunteer_count?: number
+  id: string;
+  event_id: string;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  capacity: number | null;
+  location?: string;
+  volunteer_count?: number;
 }
 
 interface ShiftManagementModalProps {
-  event: Event
-  isOpen: boolean
-  onClose: () => void
-  onShiftUpdate?: () => void
+  event: Event;
+  isOpen: boolean;
+  onClose: () => void;
+  onShiftUpdate?: () => void;
 }
 
-export default function ShiftManagementModal({ 
-  event, 
-  isOpen, 
-  onClose, 
-  onShiftUpdate 
+export default function ShiftManagementModal({
+  event,
+  isOpen,
+  onClose,
+  onShiftUpdate,
 }: ShiftManagementModalProps) {
-  const [shifts, setShifts] = useState<Shift[]>([])
-  const [loading, setLoading] = useState(false)
-  const [shiftsLoading, setShiftsLoading] = useState(false)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [editingShift, setEditingShift] = useState<Shift | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [shiftsLoading, setShiftsLoading] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingShift, setEditingShift] = useState<Shift | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    start_time: '',
-    end_time: '',
-    capacity: '',
-    location: '',
-  })
+    title: "",
+    description: "",
+    start_time: "",
+    end_time: "",
+    capacity: "",
+    location: "",
+  });
 
   const styles = {
     overlay: {
@@ -84,7 +84,7 @@ export default function ShiftManagementModal({
       alignItems: "flex-start",
     } as React.CSSProperties,
     title: {
-      fontSize: theme.typography.fontSize['2xl'],
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.secondary,
       margin: 0,
@@ -276,22 +276,22 @@ export default function ShiftManagementModal({
       color: theme.colors.text.secondary,
       fontSize: theme.typography.fontSize.sm,
     } as React.CSSProperties,
-  }
+  };
 
   const fetchShifts = async () => {
-    setShiftsLoading(true)
+    setShiftsLoading(true);
     try {
       // Fetch shifts
       const { data: shiftsData, error: shiftsError } = await supabase
         .from("shifts")
         .select("*")
         .eq("event_id", event.id)
-        .order("start_time")
+        .order("start_time");
 
       if (shiftsError) {
-        console.error("Error fetching shifts:", shiftsError)
-        setError("Failed to load shifts")
-        return
+        console.error("Error fetching shifts:", shiftsError);
+        setError("Failed to load shifts");
+        return;
       }
 
       // Fetch volunteer assignments count for each shift
@@ -300,92 +300,90 @@ export default function ShiftManagementModal({
           const { count, error: countError } = await supabase
             .from("volunteer_assignments")
             .select("*", { count: "exact", head: true })
-            .eq("shift_id", shift.id)
+            .eq("shift_id", shift.id);
 
           if (countError) {
-            console.error("Error counting assignments:", countError)
+            console.error("Error counting assignments:", countError);
           }
 
           return {
             ...shift,
-            volunteer_count: count || 0
-          }
+            volunteer_count: count || 0,
+          };
         })
-      )
+      );
 
-      setShifts(shiftsWithCount)
+      setShifts(shiftsWithCount);
     } catch (error) {
-      console.error("Error fetching shifts:", error)
-      setError("Failed to load shifts")
+      console.error("Error fetching shifts:", error);
+      setError("Failed to load shifts");
     } finally {
-      setShiftsLoading(false)
+      setShiftsLoading(false);
     }
-  }
+  };
 
   const handleCreateShift = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const { error } = await supabase
-        .from("shifts")
-        .insert({
-          event_id: event.id,
-          title: formData.title,
-          description: formData.description,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
-          capacity: formData.capacity ? parseInt(formData.capacity) : null,
-          location: formData.location || event.location,
-        })
+      const { error } = await supabase.from("shifts").insert({
+        event_id: event.id,
+        title: formData.title,
+        description: formData.description,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        capacity: formData.capacity ? parseInt(formData.capacity) : null,
+        location: formData.location || event.location,
+      });
 
       if (error) {
-        console.error("Error creating shift:", error)
-        setError("Failed to create shift")
-        return
+        console.error("Error creating shift:", error);
+        setError("Failed to create shift");
+        return;
       }
 
-      setSuccess("Shift created successfully!")
-      setShowCreateForm(false)
+      setSuccess("Shift created successfully!");
+      setShowCreateForm(false);
       setFormData({
-        title: '',
-        description: '',
-        start_time: '',
-        end_time: '',
-        capacity: '',
-        location: '',
-      })
-      fetchShifts()
-      onShiftUpdate?.()
+        title: "",
+        description: "",
+        start_time: "",
+        end_time: "",
+        capacity: "",
+        location: "",
+      });
+      fetchShifts();
+      onShiftUpdate?.();
     } catch (error) {
-      console.error("Error creating shift:", error)
-      setError("Failed to create shift")
+      console.error("Error creating shift:", error);
+      setError("Failed to create shift");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEditShift = (shift: Shift) => {
-    setEditingShift(shift)
+    setEditingShift(shift);
     setFormData({
       title: shift.title,
-      description: shift.description || '',
+      description: shift.description || "",
       start_time: shift.start_time.substring(0, 16), // Format for datetime-local
       end_time: shift.end_time.substring(0, 16),
-      capacity: shift.capacity?.toString() || '',
-      location: shift.location || '',
-    })
-    setShowCreateForm(true)
-  }
+      capacity: shift.capacity?.toString() || "",
+      location: shift.location || "",
+    });
+    setShowCreateForm(true);
+  };
 
   const handleUpdateShift = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      if (!editingShift) return
+      if (!editingShift) return;
 
       const { error } = await supabase
         .from("shifts")
@@ -397,82 +395,87 @@ export default function ShiftManagementModal({
           capacity: formData.capacity ? parseInt(formData.capacity) : null,
           location: formData.location || event.location,
         })
-        .eq("id", editingShift.id)
+        .eq("id", editingShift.id);
 
       if (error) {
-        console.error("Error updating shift:", error)
-        setError("Failed to update shift")
-        return
+        console.error("Error updating shift:", error);
+        setError("Failed to update shift");
+        return;
       }
 
-      setSuccess("Shift updated successfully!")
-      setShowCreateForm(false)
-      setEditingShift(null)
+      setSuccess("Shift updated successfully!");
+      setShowCreateForm(false);
+      setEditingShift(null);
       setFormData({
-        title: '',
-        description: '',
-        start_time: '',
-        end_time: '',
-        capacity: '',
-        location: '',
-      })
-      fetchShifts()
-      onShiftUpdate?.()
+        title: "",
+        description: "",
+        start_time: "",
+        end_time: "",
+        capacity: "",
+        location: "",
+      });
+      fetchShifts();
+      onShiftUpdate?.();
     } catch (error) {
-      console.error("Error updating shift:", error)
-      setError("Failed to update shift")
+      console.error("Error updating shift:", error);
+      setError("Failed to update shift");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteShift = async (shiftId: string) => {
-    if (!confirm('Are you sure you want to delete this shift? This will also remove all volunteer assignments for this shift.')) return
+    if (
+      !confirm(
+        "Are you sure you want to delete this shift? This will also remove all volunteer assignments for this shift."
+      )
+    )
+      return;
 
     try {
       const { error } = await supabase
         .from("shifts")
         .delete()
-        .eq("id", shiftId)
+        .eq("id", shiftId);
 
       if (error) {
-        console.error("Error deleting shift:", error)
-        setError("Failed to delete shift")
-        return
+        console.error("Error deleting shift:", error);
+        setError("Failed to delete shift");
+        return;
       }
 
-      setSuccess("Shift deleted successfully!")
-      fetchShifts()
-      onShiftUpdate?.()
+      setSuccess("Shift deleted successfully!");
+      fetchShifts();
+      onShiftUpdate?.();
     } catch (error) {
-      console.error("Error deleting shift:", error)
-      setError("Failed to delete shift")
+      console.error("Error deleting shift:", error);
+      setError("Failed to delete shift");
     }
-  }
+  };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
-      fetchShifts()
+      fetchShifts();
     }
-  }, [isOpen, event.id])
+  }, [isOpen, event.id]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div style={styles.overlay} onClick={onClose}>
@@ -489,7 +492,9 @@ export default function ShiftManagementModal({
             <div style={styles.eventTitle}>{event.title}</div>
             <div style={styles.eventDetail}>
               <span style={styles.eventLabel}>Date:</span>
-              <span style={styles.eventValue}>{formatDate(event.start_date)}</span>
+              <span style={styles.eventValue}>
+                {formatDate(event.start_date)}
+              </span>
             </div>
             <div style={styles.eventDetail}>
               <span style={styles.eventLabel}>Location:</span>
@@ -497,17 +502,9 @@ export default function ShiftManagementModal({
             </div>
           </div>
 
-          {error && (
-            <div style={styles.error}>
-              {error}
-            </div>
-          )}
+          {error && <div style={styles.error}>{error}</div>}
 
-          {success && (
-            <div style={styles.success}>
-              {success}
-            </div>
-          )}
+          {success && <div style={styles.success}>{success}</div>}
 
           <div style={styles.section}>
             <div style={styles.sectionHeader}>
@@ -515,126 +512,152 @@ export default function ShiftManagementModal({
               <button
                 style={{
                   ...styles.button,
-                  ...styles.primaryButton
+                  ...styles.primaryButton,
                 }}
                 onClick={() => {
-                  setShowCreateForm(!showCreateForm)
-                  setEditingShift(null)
+                  setShowCreateForm(!showCreateForm);
+                  setEditingShift(null);
                   setFormData({
-                    title: '',
-                    description: '',
-                    start_time: '',
-                    end_time: '',
-                    capacity: '',
-                    location: '',
-                  })
+                    title: "",
+                    description: "",
+                    start_time: "",
+                    end_time: "",
+                    capacity: "",
+                    location: "",
+                  });
                 }}
               >
-                {showCreateForm ? 'Cancel' : '+ Create Shift'}
+                {showCreateForm ? "Cancel" : "+ Create Shift"}
               </button>
             </div>
 
             {showCreateForm && (
               <div style={styles.createForm}>
                 <h4 style={styles.formTitle}>
-                  {editingShift ? 'Edit Shift' : 'Create New Shift'}
+                  {editingShift ? "Edit Shift" : "Create New Shift"}
                 </h4>
-                <form onSubmit={editingShift ? handleUpdateShift : handleCreateShift}>
+                <form
+                  onSubmit={
+                    editingShift ? handleUpdateShift : handleCreateShift
+                  }
+                >
                   <div style={styles.formGrid}>
                     <div style={styles.formGroup}>
                       <label style={styles.formLabel}>Shift Title *</label>
                       <input
                         type="text"
                         value={formData.title}
-                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, title: e.target.value })
+                        }
                         style={styles.formInput}
                         required
                       />
                     </div>
-                    
+
                     <div style={styles.formGroup}>
                       <label style={styles.formLabel}>Start Time *</label>
                       <input
                         type="datetime-local"
                         value={formData.start_time}
-                        onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            start_time: e.target.value,
+                          })
+                        }
                         style={styles.formInput}
                         required
                       />
                     </div>
-                    
+
                     <div style={styles.formGroup}>
                       <label style={styles.formLabel}>End Time *</label>
                       <input
                         type="datetime-local"
                         value={formData.end_time}
-                        onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, end_time: e.target.value })
+                        }
                         style={styles.formInput}
                         required
                       />
                     </div>
-                    
+
                     <div style={styles.formGroup}>
                       <label style={styles.formLabel}>Max Volunteers</label>
                       <input
                         type="number"
                         value={formData.capacity}
-                        onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, capacity: e.target.value })
+                        }
                         style={styles.formInput}
                         min="1"
                       />
                     </div>
-                    
+
                     <div style={styles.formGroup}>
                       <label style={styles.formLabel}>Location</label>
                       <input
                         type="text"
                         value={formData.location}
-                        onChange={(e) => setFormData({...formData, location: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, location: e.target.value })
+                        }
                         style={styles.formInput}
                         placeholder={event.location}
                       />
                     </div>
                   </div>
-                  
+
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>Description</label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       style={styles.formTextarea}
                       placeholder="Describe what volunteers will be doing during this shift..."
                     />
                   </div>
-                  
+
                   <div style={styles.formActions}>
                     <button
                       type="submit"
                       style={{
                         ...styles.button,
-                        ...styles.primaryButton
+                        ...styles.primaryButton,
                       }}
                       disabled={loading}
                     >
-                      {loading ? 'Saving...' : (editingShift ? 'Update Shift' : 'Create Shift')}
+                      {loading
+                        ? "Saving..."
+                        : editingShift
+                          ? "Update Shift"
+                          : "Create Shift"}
                     </button>
                     <button
                       type="button"
                       onClick={() => {
-                        setShowCreateForm(false)
-                        setEditingShift(null)
+                        setShowCreateForm(false);
+                        setEditingShift(null);
                         setFormData({
-                          title: '',
-                          description: '',
-                          start_time: '',
-                          end_time: '',
-                          capacity: '',
-                          location: '',
-                        })
+                          title: "",
+                          description: "",
+                          start_time: "",
+                          end_time: "",
+                          capacity: "",
+                          location: "",
+                        });
                       }}
                       style={{
                         ...styles.button,
-                        ...styles.secondaryButton
+                        ...styles.secondaryButton,
                       }}
                     >
                       Cancel
@@ -656,15 +679,19 @@ export default function ShiftManagementModal({
                   <div style={styles.shiftHeader}>
                     <div style={styles.shiftTitle}>{shift.title}</div>
                     <div style={styles.shiftTime}>
-                      {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
+                      {formatTime(shift.start_time)} -{" "}
+                      {formatTime(shift.end_time)}
                     </div>
                   </div>
                   {shift.description && (
-                    <div style={styles.shiftDescription}>{shift.description}</div>
+                    <div style={styles.shiftDescription}>
+                      {shift.description}
+                    </div>
                   )}
                   <div style={styles.shiftMeta}>
                     <span>
-                      {shift.volunteer_count || 0} / {shift.capacity || '∞'} volunteers
+                      {shift.volunteer_count || 0} / {shift.capacity || "∞"}{" "}
+                      volunteers
                     </span>
                     <div style={styles.shiftActions}>
                       <button
@@ -672,7 +699,7 @@ export default function ShiftManagementModal({
                           ...styles.button,
                           ...styles.secondaryButton,
                           fontSize: theme.typography.fontSize.xs,
-                          padding: "0.25rem 0.5rem"
+                          padding: "0.25rem 0.5rem",
                         }}
                         onClick={() => handleEditShift(shift)}
                       >
@@ -683,7 +710,7 @@ export default function ShiftManagementModal({
                           ...styles.button,
                           ...styles.dangerButton,
                           fontSize: theme.typography.fontSize.xs,
-                          padding: "0.25rem 0.5rem"
+                          padding: "0.25rem 0.5rem",
                         }}
                         onClick={() => handleDeleteShift(shift.id)}
                       >
@@ -698,5 +725,5 @@ export default function ShiftManagementModal({
         </div>
       </div>
     </div>
-  )
+  );
 }
