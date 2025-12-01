@@ -507,7 +507,21 @@ export default function AdminShiftsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    // Parse datetime-local string (YYYY-MM-DDTHH:mm) as local time
+    // Extract date parts directly to avoid timezone conversion
+    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!match) return dateString;
+    
+    const [, year, month, day, hour, minute] = match;
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1, // months are 0-indexed
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute)
+    );
+    
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",

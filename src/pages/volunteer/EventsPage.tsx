@@ -57,19 +57,29 @@ export default function EventsPage() {
         .order("start_date", { ascending: true });
 
       if (eventsData) {
-        const calendarEventsData = eventsData.map((event) => ({
-          id: `event-${event.id}`,
-          title: event.title,
-          start: new Date(event.start_date),
-          end: new Date(event.end_date),
-          resource: { type: "event", ...event },
-          color:
-            event.status === "active"
-              ? theme.colors.primary
-              : event.status === "completed"
-                ? theme.colors.success
-                : theme.colors.neutral[400],
-        }));
+        const calendarEventsData = eventsData.map((event) => {
+          // Parse datetime strings as local time by extracting components
+          const parseLocalDate = (dateStr: string) => {
+            const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+            if (!match) return new Date(dateStr);
+            const [, year, month, day, hour, minute] = match;
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute));
+          };
+          
+          return {
+            id: `event-${event.id}`,
+            title: event.title,
+            start: parseLocalDate(event.start_date),
+            end: parseLocalDate(event.end_date),
+            resource: { type: "event", ...event },
+            color:
+              event.status === "active"
+                ? theme.colors.primary
+                : event.status === "completed"
+                  ? theme.colors.success
+                  : theme.colors.neutral[400],
+          };
+        });
         setCalendarEvents(calendarEventsData);
       }
     } catch (error) {
@@ -80,11 +90,15 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       // First, get all active events
+      // Get current time in local format (YYYY-MM-DDTHH:mm) to match datetime-local storage
+      const now = new Date();
+      const localNow = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
       const query = supabase
         .from("events")
         .select("*")
         .eq("status", "active")
-        .gte("end_date", new Date().toISOString())
+        .gte("end_date", localNow)
         .order("start_date", { ascending: true })
         .limit(20);
 
@@ -159,7 +173,21 @@ export default function EventsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    // Parse datetime-local string (YYYY-MM-DDTHH:mm) as local time
+    // Extract date parts directly to avoid timezone conversion
+    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!match) return dateString;
+    
+    const [, year, month, day, hour, minute] = match;
+    const date = new Date(
+      parseInt(year),
+      parseInt(month) - 1, // months are 0-indexed
+      parseInt(day),
+      parseInt(hour),
+      parseInt(minute)
+    );
+    
+    return date.toLocaleString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
