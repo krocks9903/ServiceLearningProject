@@ -92,17 +92,16 @@ src/
    ```
 
 3. **Environment Configuration**
-   Create a `.env.local` file in the root directory:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_OPENAI_API_KEY=your_openai_api_key
+   Copy the example environment file and fill in your credentials:
+   ```bash
+   cp .env.example .env.local
    ```
+   Then edit `.env.local` with your actual API keys and URLs (never commit this file)
 
 4. **Database Setup**
    - Create a new Supabase project
-   - Run the SQL scripts in `docs/database/` to set up your database schema
-   - Configure Row Level Security (RLS) policies as needed
+   - Contact the development team for database setup instructions
+   - Configure Row Level Security (RLS) policies as per internal documentation
 
 5. **Start Development Server**
    ```bash
@@ -123,23 +122,15 @@ src/
 
 ## Database Schema
 
-The application uses the following main database tables:
-
-- **profiles** - User profile information
-- **events** - Volunteer events and opportunities
-- **shifts** - Event time slots
-- **hour_logs** - Volunteer hour tracking
-- **volunteer_assignments** - Event registrations
-- **organizations** - Partner organizations
-- **sites** - Physical locations
+The application uses a relational database structure managed through Supabase. For detailed schema information, refer to internal documentation.
 
 ## Security Features
 
-- **Authentication**: Supabase Auth with email/password
-- **Authorization**: Role-based access control (RBAC)
-- **Data Protection**: Row Level Security (RLS) policies
-- **Input Validation**: Client and server-side validation
-- **Secure Headers**: HTTPS enforcement and security headers
+- **Authentication**: Secure user authentication system
+- **Authorization**: Role-based access control
+- **Data Protection**: Multi-layer security policies
+- **Input Validation**: Comprehensive validation throughout
+- **Secure Communication**: HTTPS enforcement
 
 ## Performance Optimizations
 
@@ -222,8 +213,6 @@ npm run test:ui
 
 For detailed testing documentation, see [TESTING.md](docs/TESTING.md)
 
-For presentation guide, see [TESTING_PRESENTATION.md](docs/TESTING_PRESENTATION.md)
-
 ## Deployment
 
 ### Production Deployment
@@ -245,20 +234,11 @@ For presentation guide, see [TESTING_PRESENTATION.md](docs/TESTING_PRESENTATION.
 
 ### Environment Variables
 
-Ensure the following environment variables are set in production:
-
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `VITE_OPENAI_API_KEY` - Your OpenAI API key (if using AI features)
+Ensure all required environment variables from `.env.example` are configured in your deployment platform. Never expose these values in code or version control.
 
 ## API Documentation
 
-The application integrates with Supabase for backend services. Key API endpoints include:
-
-- **Authentication**: User login, signup, and session management
-- **Volunteers**: CRUD operations for volunteer profiles
-- **Events**: Event creation, management, and registration
-- **Analytics**: Reporting and data aggregation
+The application integrates with backend services for data management. API documentation is available in internal documentation for authorized developers.
 
 ## Troubleshooting
 

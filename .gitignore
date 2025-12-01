@@ -1,0 +1,118 @@
+# ================================
+# SECURITY - Sensitive Files
+# ================================
+# Environment variables with API keys and credentials
+.env
+.env.local
+.env.*.local
+*.local
+
+# Sensitive documentation (internal only)
+/Documents/Important/
+/INTERNAL_DOCS/
+/PRIVATE/
+
+# Supabase config (if contains credentials)
+.supabase/
+
+# ================================
+# BUILD OUTPUT
+# ================================
+# Never commit build files - they contain bundled credentials
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# ================================
+# DEPENDENCIES
+# ================================
+node_modules/
+.pnp
+.pnp.js
+
+# ================================
+# LOGS
+# ================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ================================
+# TESTING
+# ================================
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ================================
+# EDITOR & OS
+# ================================
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ================================
+# TEMPORARY FILES
+# ================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+tmp/
+temp/
+
+# ================================
+# PACKAGE MANAGERS
+# ================================
+.yarn/
+.pnpm-store/
+package-lock.json.backup
+
+# ================================
+# MISC
+# ================================
+.husky/_/

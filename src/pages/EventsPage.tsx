@@ -14,6 +14,7 @@ interface Event {
   end_date: string
   max_volunteers: number | null
   status: string
+  is_private?: boolean
   volunteer_count?: number
 }
 
@@ -25,7 +26,14 @@ export default function EventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
-  const [calendarEvents, setCalendarEvents] = useState([])
+  const [calendarEvents, setCalendarEvents] = useState<Array<{
+    id: string;
+    title: string;
+    start: Date;
+    end: Date;
+    resource: any;
+    color: string;
+  }>>([])
   
   // Professional stock imagery
   const defaultEventImage = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1920&q=80"
@@ -62,7 +70,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       // First, get all active events
-      let query = supabase
+      const query = supabase
         .from("events")
         .select("*")
         .eq("status", "active")
@@ -81,7 +89,7 @@ export default function EventsPage() {
       // Filter private events - only show if user has access
       if (!user) {
         // Non-logged-in users can only see public events
-        const publicEvents = (allEvents || []).filter(e => !(e as any).is_private)
+        const publicEvents = (allEvents || []).filter(e => !(e as Event & { is_private?: boolean }).is_private)
         const eventsWithCount = await Promise.all(
           publicEvents.map(async (event) => {
             const { count } = await supabase
@@ -108,7 +116,7 @@ export default function EventsPage() {
 
       // Filter events: show public events OR private events the user has access to
       const filteredEvents = (allEvents || []).filter(e => 
-        !(e as any).is_private || visiblePrivateEventIds.has(e.id)
+        !(e as Event & { is_private?: boolean }).is_private || visiblePrivateEventIds.has(e.id)
       )
 
       const eventsWithCount = await Promise.all(

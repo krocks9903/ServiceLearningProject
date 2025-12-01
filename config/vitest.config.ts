@@ -6,15 +6,15 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'src/**/*.integration.test.{ts,tsx}'],
+    setupFiles: ['../src/test/setup.ts'],
+    include: ['../src/**/*.{test,spec}.{ts,tsx}', '../src/**/*.integration.test.{ts,tsx}'],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
-        'src/test/',
+        '../src/test/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/dist/',
@@ -23,7 +23,7 @@ export default defineConfig({
         '**/*.spec.{ts,tsx}',
         '**/*.integration.test.{ts,tsx}',
       ],
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['../src/**/*.{ts,tsx}'],
     },
   },
 });
