@@ -1,7 +1,7 @@
 # Harry Chapin Food Bank - Volunteer Portal
 ## Project Structure
 
-Last Updated: 2025-10-02
+Last Updated: December 1, 2025
 
 ---
 
@@ -10,59 +10,161 @@ Last Updated: 2025-10-02
 ```
 ServiceLearningProject/
 │
-├── public/
+├── config/                  # All configuration files
+│   ├── eslint.config.js    # ESLint configuration
+│   ├── playwright.config.ts # E2E test configuration
+│   ├── .prettierrc         # Code formatting
+│   ├── tsconfig.json       # Main TypeScript config
+│   ├── tsconfig.app.json   # App TypeScript config
+│   ├── tsconfig.node.json  # Node TypeScript config
+│   ├── vite.config.ts      # Vite build config
+│   └── vitest.config.ts    # Unit test config
+│
+├── docs/                   # Public documentation
+│   ├── ADMIN_FEATURES_IMPLEMENTATION.md
+│   ├── CONTRIBUTING.md
+│   ├── DESIGN_SYSTEM_COMPLETE.md
+│   ├── PROJECT_STRUCTURE.md
+│   └── TESTING.md
+│
+├── INTERNAL_DOCS/          # Private docs (not in git)
+│   ├── database/           # Database migration scripts
+│   ├── .env.local          # Local environment vars
+│   └── SECURITY_ALERT.md
+│
+├── public/                 # Static assets
+│   ├── images/
 │   └── vite.svg
 │
-├── src/
+├── src/                    # Source code
 │   │
-│   ├── components/           # Reusable UI components
-│   │   └── shared/          # Shared components used across the app
-│   │       └── Navbar.tsx   # Main navigation bar (✅ Active)
+│   ├── components/         # React components
+│   │   ├── admin/         # Admin components (with index.ts)
+│   │   │   ├── ShiftManagementModal.tsx
+│   │   │   ├── VolunteerAssignmentsModal.tsx
+│   │   │   ├── VolunteerDetailsModal.tsx
+│   │   │   ├── VolunteerReportModal.tsx
+│   │   │   └── index.ts   # Barrel export
+│   │   │
+│   │   ├── scheduling/    # Scheduling components (with index.ts)
+│   │   │   ├── EventRegistrationModal.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   └── shared/        # Shared components (with index.ts)
+│   │       ├── Calendar.tsx
+│   │       ├── DatePicker.tsx
+│   │       ├── Navbar.tsx
+│   │       └── index.ts
 │   │
-│   ├── hooks/               # Custom React hooks
-│   │   ├── useAuth.tsx      # Authentication hook (✅ Active)
-│   │   └── useSupabase.ts   # Supabase utilities (✅ Active)
+│   ├── constants/         # Constants and theme
+│   │   ├── theme.ts       # Design system
+│   │   └── index.ts
 │   │
-│   ├── pages/               # Main application pages
-│   │   ├── Home.tsx         # Landing page (✅ Active)
-│   │   ├── LoginPage.tsx    # User login (✅ Active)
-│   │   ├── SignupPage.tsx   # Comprehensive registration (✅ Active)
-│   │   ├── DashboardPage.tsx # Volunteer dashboard (✅ Active)
-│   │   ├── EventsPage.tsx   # Browse events (✅ Active)
-│   │   ├── ProfilePage.tsx  # User profile management (✅ Active)
-│   │   ├── AdminPage.tsx    # Admin dashboard (✅ Active)
-│   │   ├── ReportsPage.tsx  # Admin reports (✅ Active)
-│   │   └── KioskPage.tsx    # Kiosk check-in/out (✅ Active)
+│   ├── hooks/             # Custom React hooks (with index.ts)
+│   │   ├── useAuth.tsx
+│   │   ├── useAdminAuth.tsx
+│   │   ├── useSupabase.ts
+│   │   └── index.ts       # Barrel export
 │   │
-│   ├── services/            # External service integrations
-│   │   ├── api.ts           # API utilities (✅ Active)
-│   │   └── supabaseClient.ts # Supabase configuration (✅ Active)
+│   ├── pages/             # Page components
+│   │   ├── admin/        # Admin pages
+│   │   │   ├── AdminDashboardPage.tsx
+│   │   │   ├── AdminVolunteersPage.tsx
+│   │   │   ├── AdminShiftsPage.tsx
+│   │   │   ├── AdminHoursPage.tsx
+│   │   │   └── AdminLoginPage.tsx
+│   │   │
+│   │   ├── Home.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── SignupPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── EventsPage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── AdminPage.tsx
+│   │   ├── ReportsPage.tsx
+│   │   └── KioskPage.tsx
 │   │
-│   ├── types/               # TypeScript type definitions
-│   │   ├── event.d.ts       # Event types (✅ Active)
-│   │   └── volunteer.d.ts   # Volunteer types (✅ Active)
+│   ├── services/          # External services (with index.ts)
+│   │   ├── api.ts
+│   │   ├── supabaseClient.ts
+│   │   └── index.ts
 │   │
-│   ├── utils/               # Utility functions
-│   │   ├── formatDate.ts    # Date formatting (✅ Active)
-│   │   └── validations.ts   # Form validations (✅ Active)
+│   ├── test/              # Test utilities
+│   │   ├── setup.ts
+│   │   └── utils.tsx
 │   │
-│   ├── App.css              # App-level styles
-│   ├── App.tsx              # Main app component (✅ Active)
-│   ├── index.css            # Global styles (✅ Active)
-│   ├── main.tsx             # App entry point (✅ Active)
-│   └── theme.ts             # Design system & theme (✅ Active)
+│   ├── types/             # TypeScript types (with index.ts)
+│   │   ├── event.d.ts
+│   │   ├── volunteer.ts
+│   │   └── index.ts
+│   │
+│   ├── utils/             # Utility functions (with index.ts)
+│   │   ├── formatDate.ts
+│   │   ├── validations.ts
+│   │   └── index.ts
+│   │
+│   ├── App.css            # App-level styles
+│   ├── App.tsx            # Main app component
+│   ├── index.css          # Global styles
+│   ├── main.tsx           # App entry point
+│   └── vite-env.d.ts      # Vite type definitions
 │
-├── index.html               # HTML entry point
-├── package.json             # Dependencies
-├── tsconfig.json            # TypeScript config
-├── vite.config.ts           # Vite config
-├── eslint.config.js         # ESLint config
+├── tests/                 # E2E and acceptance tests
+│   ├── e2e/
+│   └── acceptance/
 │
-├── DATABASE_SETUP.sql       # Database schema
-├── ADD_SIGNUP_COLUMNS.sql   # Additional columns for signup
-├── DESIGN_SYSTEM_COMPLETE.md # Design documentation
-└── PROJECT_STRUCTURE.md     # This file
+├── .env.example           # Environment template
+├── .gitignore            # Git ignore rules
+├── index.html            # HTML entry point
+├── package.json          # Dependencies
+├── README.md             # Documentation
+├── tsconfig.json         # TS config reference
+└── vite.config.ts        # Vite config reference
 
+```
+
+---
+
+## 🎯 Clean Import Paths with Path Aliases
+
+### Before (Messy Relative Paths):
+```typescript
+import { useAuth } from "../../../hooks/useAuth"
+import { theme } from "../../../theme"
+import Calendar from "../../../components/shared/Calendar"
+import { supabase } from "../../../services/supabaseClient"
+```
+
+### After (Clean Path Aliases):
+```typescript
+import { useAuth } from "@hooks"
+import { theme } from "@constants"
+import { Calendar } from "@components/shared"
+import { supabase } from "@services"
+```
+
+### Available Path Aliases:
+- `@/*` - Root src folder
+- `@components/*` - Components
+- `@hooks/*` - Custom hooks  
+- `@services/*` - Services/API
+- `@utils/*` - Utilities
+- `@types/*` - TypeScript types
+- `@constants/*` - Constants/theme
+- `@pages/*` - Page components
+
+### Barrel Exports (index.ts)
+
+Each major folder exports everything through `index.ts`:
+
+```typescript
+// hooks/index.ts
+export { useAuth, AuthProvider } from './useAuth'
+export { useAdminAuth, AdminAuthProvider } from './useAdminAuth'
+export { useSupabase } from './useSupabase'
+
+// Usage anywhere:
+import { useAuth, useAdminAuth, useSupabase } from '@hooks'
 ```
 
 ---

@@ -20,18 +20,21 @@ This platform serves as a centralized hub for managing volunteer activities, eve
 This project was developed using a combination of **Rapid Prototyping**, **Iterative Development**, and **Incremental Delivery** methodologies:
 
 ### Rapid Prototyping
+
 - Initial MVP was built quickly to validate core concepts
 - Focused on essential features: authentication, volunteer registration, event management
 - Used modern tooling (Vite, React 19) for fast development cycles
 - Leveraged Supabase for rapid backend setup
 
 ### Iterative Development
+
 - Continuous refinement of features based on user feedback
 - Regular code reviews and refactoring
 - Progressive enhancement of UI/UX components
 - Database schema evolution through migration scripts
 
 ### Incremental Delivery
+
 - Features delivered in small, manageable increments
 - Each increment builds upon previous functionality
 - Modular architecture allows for independent feature development
@@ -40,6 +43,7 @@ This project was developed using a combination of **Rapid Prototyping**, **Itera
 ## Features
 
 ### Core Functionality
+
 - **User Authentication**: Secure login/signup with role-based access
 - **Volunteer Management**: Comprehensive volunteer profiles and tracking
 - **Event Management**: Create, manage, and track volunteer events
@@ -47,6 +51,7 @@ This project was developed using a combination of **Rapid Prototyping**, **Itera
 - **Real-time Updates**: Live data synchronization across the platform
 
 ### Advanced Features
+
 - **AI-Powered Recommendations**: Intelligent volunteer-event matching
 - **Reporting System**: Comprehensive analytics and reporting tools
 - **Kiosk Mode**: Check-in/out functionality for physical locations
@@ -73,6 +78,7 @@ src/
 ## Setup Instructions
 
 ### Prerequisites
+
 - Node.js 20+ (LTS recommended)
 - npm or yarn package manager
 - Git
@@ -81,21 +87,25 @@ src/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/ServiceLearningProject.git
    cd ServiceLearningProject
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Configuration**
    Copy the example environment file and fill in your credentials:
+
    ```bash
    cp .env.example .env.local
    ```
+
    Then edit `.env.local` with your actual API keys and URLs (never commit this file)
 
 4. **Database Setup**
@@ -104,6 +114,7 @@ src/
    - Configure Row Level Security (RLS) policies as per internal documentation
 
 5. **Start Development Server**
+
    ```bash
    npm run dev
    ```
@@ -218,6 +229,7 @@ For detailed testing documentation, see [TESTING.md](docs/TESTING.md)
 ### Production Deployment
 
 1. **Build the application**
+
    ```bash
    npm run build
    ```
