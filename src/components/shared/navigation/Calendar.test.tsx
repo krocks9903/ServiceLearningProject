@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '../../test/utils'
+import { render, screen, fireEvent } from '../../../test/utils'
 import Calendar from './Calendar'
 
 // Mock react-big-calendar

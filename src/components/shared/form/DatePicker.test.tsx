@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '../../test/utils'
+import { render, screen, fireEvent, waitFor } from '../../../test/utils'
 import DatePicker from './DatePicker'
 
 // Mock Calendar component
