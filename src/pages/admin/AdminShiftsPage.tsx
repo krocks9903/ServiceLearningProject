@@ -4,6 +4,7 @@ import { supabase } from "../../services/supabaseClient"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
 import { theme } from "../../theme"
 import ShiftManagementModal from "../../components/admin/ShiftManagementModal"
+import DatePicker from "../../components/shared/DatePicker"
 import VolunteerAssignmentsModal from "../../components/admin/VolunteerAssignmentsModal"
 
 interface Event {
@@ -39,6 +40,7 @@ export default function AdminShiftsPage() {
     start_date: '',
     end_date: '',
     max_volunteers: '',
+    is_private: false,
   })
 
   // Define styles at the top to avoid hoisting issues
@@ -316,10 +318,7 @@ export default function AdminShiftsPage() {
     try {
       const { data, error } = await supabase
         .from('events')
-        .select(`
-          *,
-          volunteer_assignments(count)
-        `)
+        .select('*')
         .order('start_date', { ascending: false })
 
       if (error) {
@@ -328,11 +327,24 @@ export default function AdminShiftsPage() {
         return
       }
 
-      // Transform data to include volunteer count
-      const eventsWithCount = data?.map(event => ({
-        ...event,
-        volunteer_count: event.volunteer_assignments?.[0]?.count || 0
-      })) || []
+      // Fetch volunteer count for each event
+      const eventsWithCount = await Promise.all(
+        (data || []).map(async (event) => {
+          const { count, error: countError } = await supabase
+            .from('volunteer_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+
+          if (countError) {
+            console.error('Error counting assignments:', countError)
+          }
+
+          return {
+            ...event,
+            volunteer_count: count || 0
+          }
+        })
+      )
 
       setEvents(eventsWithCount)
     } catch (error) {
@@ -348,7 +360,7 @@ export default function AdminShiftsPage() {
     setLoading(true)
 
     try {
-      const { error } = await supabase
+      const { data: newEvent, error } = await supabase
         .from('events')
         .insert({
           title: formData.title,
@@ -357,8 +369,11 @@ export default function AdminShiftsPage() {
           start_date: formData.start_date,
           end_date: formData.end_date,
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
+          is_private: formData.is_private,
           status: 'active'
         })
+        .select()
+        .single()
 
       if (error) {
         setError(error.message)
@@ -373,6 +388,7 @@ export default function AdminShiftsPage() {
         start_date: '',
         end_date: '',
         max_volunteers: '',
+        is_private: false,
       })
       fetchEvents()
     } catch (error) {
@@ -392,6 +408,7 @@ export default function AdminShiftsPage() {
       start_date: event.start_date.substring(0, 16), // Format for datetime-local input
       end_date: event.end_date.substring(0, 16),
       max_volunteers: event.max_volunteers?.toString() || '',
+      is_private: (event as any).is_private || false,
     })
     setShowCreateForm(true)
   }
@@ -413,6 +430,7 @@ export default function AdminShiftsPage() {
           start_date: formData.start_date,
           end_date: formData.end_date,
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
+          is_private: formData.is_private,
         })
         .eq('id', editingEvent.id)
 
@@ -430,6 +448,7 @@ export default function AdminShiftsPage() {
         start_date: '',
         end_date: '',
         max_volunteers: '',
+        is_private: false,
       })
       fetchEvents()
     } catch (error) {
@@ -441,23 +460,33 @@ export default function AdminShiftsPage() {
   }
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return
+    if (!confirm('Are you sure you want to delete this event? This will also delete all associated shifts and volunteer assignments.')) return
+
+    setLoading(true)
+    setError(null)
 
     try {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('events')
         .delete()
         .eq('id', eventId)
+        .select()
 
       if (error) {
-        setError(error.message)
+        console.error('Delete error:', error)
+        setError(`Failed to delete event: ${error.message}. ${error.details || ''}`)
+        setLoading(false)
         return
       }
 
-      fetchEvents()
-    } catch (error) {
-      setError('Failed to delete event')
+      // Success - refresh the events list
+      await fetchEvents()
+      setError(null)
+    } catch (error: any) {
       console.error('Error deleting event:', error)
+      setError(`Failed to delete event: ${error?.message || 'Unknown error'}`)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -554,6 +583,7 @@ export default function AdminShiftsPage() {
                   start_date: '',
                   end_date: '',
                   max_volunteers: '',
+                  is_private: false,
                 })
               } else {
                 setShowCreateForm(true)
@@ -609,23 +639,23 @@ export default function AdminShiftsPage() {
                 </div>
                 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Start Date & Time *</label>
-                  <input
-                    type="datetime-local"
+                  <DatePicker
+                    label="Start Date & Time *"
                     value={formData.start_date}
-                    onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-                    style={styles.formInput}
+                    onChange={(date) => setFormData({...formData, start_date: date})}
+                    placeholder="Select start date and time"
+                    showTime={true}
                     required
                   />
                 </div>
                 
                 <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>End Date & Time *</label>
-                  <input
-                    type="datetime-local"
+                  <DatePicker
+                    label="End Date & Time *"
                     value={formData.end_date}
-                    onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-                    style={styles.formInput}
+                    onChange={(date) => setFormData({...formData, end_date: date})}
+                    placeholder="Select end date and time"
+                    showTime={true}
                     required
                   />
                 </div>
@@ -650,6 +680,39 @@ export default function AdminShiftsPage() {
                   style={styles.formTextarea}
                   placeholder="Describe the event, what volunteers will be doing, etc."
                 />
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_private}
+                    onChange={(e) => setFormData({...formData, is_private: e.target.checked})}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      cursor: 'pointer',
+                    }}
+                  />
+                  <span style={styles.formLabel}>
+                    Private Event (only visible to selected volunteers/groups)
+                  </span>
+                </label>
+                {formData.is_private && (
+                  <p style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary,
+                    marginTop: '0.5rem',
+                    fontStyle: 'italic',
+                  }}>
+                    Note: After creating this event, you can manage which volunteers or groups can see it.
+                  </p>
+                )}
               </div>
               
               <div style={styles.formActions}>
@@ -677,6 +740,7 @@ export default function AdminShiftsPage() {
                       start_date: '',
                       end_date: '',
                       max_volunteers: '',
+                      is_private: false,
                     })
                   }}
                   style={styles.cancelButton}

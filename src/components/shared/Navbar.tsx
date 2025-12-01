@@ -1,29 +1,34 @@
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { useState } from "react"
 import { useAuth } from "../../hooks/useAuth.tsx"
 import { theme } from "../../theme"
 
 export default function Navbar() {
   const { user, isAdmin, signOut } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
       await signOut();
-      window.location.href = "/login";
+      navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   const isActivePath = (path: string) => location.pathname === path
+  
+  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
 
   const styles = {
     nav: {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      height: "72px",
-      padding: "0 2rem",
+      minHeight: "72px",
+      padding: "1rem 2rem",
       backgroundColor: theme.colors.white,
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
       borderBottom: `1px solid ${theme.colors.neutral[200]}`,
@@ -31,6 +36,7 @@ export default function Navbar() {
       top: 0,
       zIndex: 1000,
       fontFamily: theme.typography.fontFamily,
+      flexWrap: "wrap" as const,
     } as React.CSSProperties,
     brand: {
       display: "flex",
@@ -46,6 +52,34 @@ export default function Navbar() {
     brandLogo: {
       fontSize: '1.75rem',
     } as React.CSSProperties,
+    hamburger: {
+      display: "none",
+      flexDirection: "column" as const,
+      gap: "4px",
+      cursor: "pointer",
+      padding: "0.5rem",
+      backgroundColor: "transparent",
+      border: "none",
+      zIndex: 1001,
+    } as React.CSSProperties,
+    hamburgerLine: {
+      width: "28px",
+      height: "3px",
+      backgroundColor: theme.colors.secondary,
+      borderRadius: "3px",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      transformOrigin: "center",
+    } as React.CSSProperties,
+    hamburgerLineOpen1: {
+      transform: "translateY(7px) rotate(45deg)",
+    } as React.CSSProperties,
+    hamburgerLineOpen2: {
+      opacity: 0,
+      transform: "scaleX(0)",
+    } as React.CSSProperties,
+    hamburgerLineOpen3: {
+      transform: "translateY(-7px) rotate(-45deg)",
+    } as React.CSSProperties,
     navCenter: {
       display: "flex",
       gap: "2rem",
@@ -53,10 +87,28 @@ export default function Navbar() {
       flex: 1,
       justifyContent: "center",
     } as React.CSSProperties,
+    navCenterMobile: {
+      display: "none",
+      flexDirection: "column" as const,
+      width: "100%",
+      gap: "0.5rem",
+      padding: "1rem 0",
+      borderTop: `1px solid ${theme.colors.neutral[200]}`,
+      animation: "slideDown 0.3s ease-out",
+    } as React.CSSProperties,
     navRight: {
       display: "flex",
       gap: "1rem",
       alignItems: "center",
+    } as React.CSSProperties,
+    navRightMobile: {
+      display: "none",
+      flexDirection: "column" as const,
+      width: "100%",
+      gap: "0.5rem",
+      padding: "1rem 0",
+      borderTop: `1px solid ${theme.colors.neutral[200]}`,
+      animation: "slideDown 0.3s ease-out",
     } as React.CSSProperties,
     link: {
       textDecoration: "none",
@@ -122,51 +174,76 @@ export default function Navbar() {
   });
 
   return (
-    <nav style={styles.nav}>
-      {/* Brand */}
-      <Link to="/" style={styles.brand}>
-        <span style={styles.brandLogo}>🍽</span>
-        <span>Harry Chapin Food Bank of SWFL</span>
-      </Link>
+    <>
+      <nav style={styles.nav}>
+        {/* Brand */}
+        <Link to="/" style={styles.brand}>
+          <img
+            src="/harrychaplin.png"
+            alt="Harry Chapin Food Bank of SWFL"
+            style={{ height: 56, display: 'block' }}
+          />
+        </Link>
 
-      {/* Center Navigation */}
-      {user && (
-        <div style={styles.navCenter}>
-          <Link to="/dashboard" style={getLinkStyle('/dashboard')}>
-            Dashboard
-          </Link>
-          <Link to="/events" style={getLinkStyle('/events')}>
-            Events
-          </Link>
-          <Link to="/profile" style={getLinkStyle('/profile')}>
-            Profile
-          </Link>
-          {isAdmin && (
-            <>
-              <Link to="/admin/dashboard" style={getLinkStyle('/admin/dashboard')}>
-                Admin
-              </Link>
-              <Link to="/reports" style={getLinkStyle('/reports')}>
-                Reports
-              </Link>
-            </>
-          )}
-        </div>
-      )}
+        {/* Hamburger Menu */}
+        <button 
+          style={styles.hamburger} 
+          onClick={toggleMobileMenu}
+          className="mobile-hamburger"
+          aria-label="Toggle menu"
+        >
+          <span style={{
+            ...styles.hamburgerLine,
+            ...(mobileMenuOpen ? styles.hamburgerLineOpen1 : {})
+          }}></span>
+          <span style={{
+            ...styles.hamburgerLine,
+            ...(mobileMenuOpen ? styles.hamburgerLineOpen2 : {})
+          }}></span>
+          <span style={{
+            ...styles.hamburgerLine,
+            ...(mobileMenuOpen ? styles.hamburgerLineOpen3 : {})
+          }}></span>
+        </button>
 
-      {!user && (
-        <div style={styles.navCenter}>
-          <Link to="/" style={getLinkStyle('/')}>
-            Home
-          </Link>
-          <Link to="/events" style={getLinkStyle('/events')}>
-            Opportunities
-          </Link>
-        </div>
-      )}
+        {/* Center Navigation - Desktop */}
+        {user && (
+          <div style={styles.navCenter} className="nav-center-desktop">
+            <Link to="/dashboard" style={getLinkStyle('/dashboard')}>
+              Dashboard
+            </Link>
+            <Link to="/events" style={getLinkStyle('/events')}>
+              Events
+            </Link>
+            <Link to="/profile" style={getLinkStyle('/profile')}>
+              Profile
+            </Link>
+            {isAdmin && (
+              <>
+                <Link to="/admin/dashboard" style={getLinkStyle('/admin/dashboard')}>
+                  Admin
+                </Link>
+                <Link to="/reports" style={getLinkStyle('/reports')}>
+                  Reports
+                </Link>
+              </>
+            )}
+          </div>
+        )}
 
-      {/* Right Actions */}
-      <div style={styles.navRight}>
+        {!user && (
+          <div style={styles.navCenter} className="nav-center-desktop">
+            <Link to="/" style={getLinkStyle('/')}>
+              Home
+            </Link>
+            <Link to="/events" style={getLinkStyle('/events')}>
+              Opportunities
+            </Link>
+          </div>
+        )}
+
+        {/* Right Actions - Desktop */}
+        <div style={styles.navRight} className="nav-right-desktop">
         {user ? (
           <>
             <div style={styles.userMenu}>
@@ -230,7 +307,142 @@ export default function Navbar() {
             </Link>
           </>
         )}
-      </div>
-    </nav>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <>
+            {/* Center Navigation - Mobile */}
+            {user && (
+              <div style={{...styles.navCenterMobile, display: 'flex'}} className="nav-center-mobile">
+                <Link to="/dashboard" style={getLinkStyle('/dashboard')} onClick={toggleMobileMenu}>
+                  Dashboard
+                </Link>
+                <Link to="/events" style={getLinkStyle('/events')} onClick={toggleMobileMenu}>
+                  Events
+                </Link>
+                <Link to="/profile" style={getLinkStyle('/profile')} onClick={toggleMobileMenu}>
+                  Profile
+                </Link>
+                {isAdmin && (
+                  <>
+                    <Link to="/admin/dashboard" style={getLinkStyle('/admin/dashboard')} onClick={toggleMobileMenu}>
+                      Admin
+                    </Link>
+                    <Link to="/reports" style={getLinkStyle('/reports')} onClick={toggleMobileMenu}>
+                      Reports
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+
+            {!user && (
+              <div style={{...styles.navCenterMobile, display: 'flex'}} className="nav-center-mobile">
+                <Link to="/" style={getLinkStyle('/')} onClick={toggleMobileMenu}>
+                  Home
+                </Link>
+                <Link to="/events" style={getLinkStyle('/events')} onClick={toggleMobileMenu}>
+                  Opportunities
+                </Link>
+              </div>
+            )}
+
+            {/* Right Actions - Mobile */}
+            <div style={{...styles.navRightMobile, display: 'flex'}} className="nav-right-mobile">
+              {user ? (
+                <>
+                  <div style={styles.userMenu}>
+                    <div style={styles.avatar}>
+                      {user.email?.[0].toUpperCase() || 'U'}
+                    </div>
+                    <span style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      fontWeight: theme.typography.fontWeight.medium,
+                      color: theme.colors.text.primary,
+                    }}>
+                      {user.email?.split('@')[0] || 'User'}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => { handleLogout(); toggleMobileMenu(); }}
+                    style={{...styles.button, ...styles.buttonSecondary, width: '100%'}}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" style={{width: '100%'}} onClick={toggleMobileMenu}>
+                    <button 
+                      style={{...styles.button, ...styles.buttonSecondary, width: '100%'}}
+                    >
+                      Login
+                    </button>
+                  </Link>
+                  <Link to="/signup" style={{width: '100%'}} onClick={toggleMobileMenu}>
+                    <button 
+                      style={{...styles.button, width: '100%'}}
+                    >
+                      Sign Up
+                    </button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </nav>
+
+      {/* Mobile-specific styles */}
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        .mobile-hamburger {
+          transition: transform 0.3s ease;
+        }
+
+        .mobile-hamburger:hover {
+          transform: scale(1.1);
+        }
+
+        .mobile-hamburger:active {
+          transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+          .mobile-hamburger {
+            display: flex !important;
+          }
+          .nav-center-desktop,
+          .nav-right-desktop {
+            display: none !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-hamburger {
+            display: none !important;
+          }
+        }
+      `}</style>
+    </>
   )
 }

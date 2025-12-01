@@ -45,9 +45,9 @@ export default function Home() {
 
   // Professional stock imagery
   const heroImage = "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1920&q=80"
-  const childrenImage = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80"
-  const familiesImage = "https://images.unsplash.com/photo-1609220136736-443140cffec6?w=800&q=80"
-  const seniorsImage = "https://tse4.mm.bing.net/th/id/OIP.VOcD0nIerwujE0BWYOhLWwHaEO?pid=Api&P=0&h=220"
+  const childrenImage = "/feedingfamilies-scaled1.jpg"
+  const familiesImage = "/family.jpg"
+  const seniorsImage = "/seniros.jpg"
 
   const styles = {
     container: {
@@ -183,6 +183,7 @@ export default function Home() {
       width: "100%",
       height: "240px",
       objectFit: "cover",
+      objectPosition: "center top",
     } as React.CSSProperties,
     programContent: {
       padding: "2rem",
@@ -486,7 +487,7 @@ export default function Home() {
                   If you are a new volunteer or have not been through our Orientation, please review this document for more information. The Volunteer Handbook is your extensive guide to volunteering at HCFB!
                 </p>
                 <a 
-                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D45772T5814847222R82362.PDF&MN=2022115790"
+                  href="/Volunteer Handbook 2025.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -547,7 +548,7 @@ export default function Home() {
                   Here is the Operations Manual for our Fulfill Mobile Pantries (FMP). Volunteers that attend FMP should review this manual for complete operating guidelines and procedures.
                 </p>
                 <a 
-                  href="https://www.volgistics.com/ex/reports.dll/Getpdf?ID=4BmJBRi2ELDOLvoYmQ2hB0FfrONKq2tO&PDF=590144935D44263T3834518287R8589.PDF&MN=2009227680"
+                  href="/Fulfill Mobile Pantry Ops Manualv6.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -714,7 +715,31 @@ export default function Home() {
                       margin: 0,
                       fontWeight: "500"
                     }}>
-                      Minimum age: 16 (weekdays), 14 (Saturdays with adult)
+                      Minimum age: 14
+                    </p>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: "0.5rem 0 0 0",
+                      fontWeight: "500"
+                    }}>
+                      All minors must be accompanied by an Adult
+                    </p>
+                  </div>
+                  <div style={{ 
+                    marginTop: "1rem", 
+                    padding: "0.75rem", 
+                    backgroundColor: theme.colors.success[50], 
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.success[200]}`
+                  }}>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.success[800],
+                      margin: 0,
+                      fontWeight: "500"
+                    }}>
+                      *Special/corporate groups available
                     </p>
                   </div>
                 </div>
@@ -776,7 +801,7 @@ export default function Home() {
                     color: theme.colors.text.primary,
                     marginBottom: "0.75rem"
                   }}>
-                    Tuesday-Thursday
+                    Monday-Thursday
                   </p>
                   <div style={{ 
                     fontSize: "1.15rem", 
@@ -808,6 +833,30 @@ export default function Home() {
                   }}>
                     <p style={{ margin: "0.5rem 0" }}>
                       <strong style={{ fontWeight: "600", color: theme.colors.primary }}>8:30 am - 11:30 am only</strong>
+                    </p>
+                  </div>
+                  <div style={{ 
+                    marginTop: "1rem", 
+                    padding: "0.75rem", 
+                    backgroundColor: theme.colors.info[50], 
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.info[200]}`
+                  }}>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: 0,
+                      fontWeight: "500"
+                    }}>
+                      Minimum age: 14
+                    </p>
+                    <p style={{ 
+                      fontSize: "1rem", 
+                      color: theme.colors.info[800],
+                      margin: "0.5rem 0 0 0",
+                      fontWeight: "500"
+                    }}>
+                      All minors must be accompanied by an Adult
                     </p>
                   </div>
                   <div style={{ 
@@ -875,7 +924,7 @@ export default function Home() {
                     color: theme.colors.primary, 
                     marginBottom: "0.5rem"
                   }}>
-                    Ashley Fanslau
+                    Angelina Codi
                   </h4>
                   <p style={{ 
                     color: theme.colors.text.secondary, 
@@ -1097,7 +1146,7 @@ export default function Home() {
               lineHeight: "1.6"
             }}>
               <strong>Important:</strong> All volunteering must be scheduled in advance. 
-              Contact Ashley Fanslau, Volunteer Coordinator, for more information.
+              Contact Angelina Codi, Volunteer Coordinator, for more information.
             </p>
           </div>
         </div>

@@ -10,24 +10,19 @@ import AdminPage from "./pages/AdminPage";
 import ReportsPage from "./pages/ReportsPage";
 
 // Admin pages
-import AdminLoginPage from "./pages/admin/AdminLoginPage";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import AdminVolunteersPage from "./pages/admin/AdminVolunteersPage";
-import AdminShiftsPage from "./pages/admin/AdminShiftsPage";
-
-import { useAuth } from "./hooks/useAuth";
-import { AdminAuthProvider } from "./hooks/useAdminAuth";
-import { theme } from "./theme";
-import HoursPage from "./pages/HoursPage";
-
-
+import AdminLoginPage from "./pages/admin/AdminLoginPage"
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
+import AdminVolunteersPage from "./pages/admin/AdminVolunteersPage"
+import AdminShiftsPage from "./pages/admin/AdminShiftsPage"
+import AdminHoursPage from "./pages/admin/AdminHoursPage"
+import KioskPage from "./pages/KioskPage"
+import { useAuth } from "./hooks/useAuth"
+import { AdminAuthProvider } from "./hooks/useAdminAuth"
+import { theme } from "./theme"
 
 function App() {
   const { loading } = useAuth();
-
-  // Debug: Log loading state
-  console.log("App loading state:", loading);
-
+  
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "3rem" }}>
@@ -41,9 +36,7 @@ function App() {
       </div>
     );
   }
-
-  console.log("App loaded successfully!");
-
+  
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Navbar />
@@ -58,42 +51,36 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/kiosk" element={<KioskPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/reports" element={<ReportsPage />} />
-
-          {/* Admin Routes - Protected (keep as-is for now) */}
-          <Route
-            path="/admin/login"
-            element={
-              <AdminAuthProvider>
-                <AdminLoginPage />
-              </AdminAuthProvider>
-            }
-          />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminAuthProvider>
-                <AdminDashboardPage />
-              </AdminAuthProvider>
-            }
-          />
-          <Route
-            path="/admin/volunteers"
-            element={
-              <AdminAuthProvider>
-                <AdminVolunteersPage />
-              </AdminAuthProvider>
-            }
-          />
-          <Route
-            path="/admin/shifts"
-            element={
-              <AdminAuthProvider>
-                <AdminShiftsPage />
-              </AdminAuthProvider>
-            }
-          />
+          
+          {/* Admin Routes - Protected */}
+          <Route path="/admin/login" element={
+            <AdminAuthProvider>
+              <AdminLoginPage />
+            </AdminAuthProvider>
+          } />
+          <Route path="/admin/dashboard" element={
+            <AdminAuthProvider>
+              <AdminDashboardPage />
+            </AdminAuthProvider>
+          } />
+          <Route path="/admin/volunteers" element={
+            <AdminAuthProvider>
+              <AdminVolunteersPage />
+            </AdminAuthProvider>
+          } />
+          <Route path="/admin/shifts" element={
+            <AdminAuthProvider>
+              <AdminShiftsPage />
+            </AdminAuthProvider>
+          } />
+          <Route path="/admin/hours" element={
+            <AdminAuthProvider>
+              <AdminHoursPage />
+            </AdminAuthProvider>
+          } />
         </Routes>
       </main>
 
@@ -193,16 +180,25 @@ function App() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/dashboard"
-                    style={{
-                      color: "white",
-                      textDecoration: "none",
-                      opacity: 0.85,
-                      fontSize: theme?.typography?.fontSize?.sm ?? "0.9rem",
-                    }}
-                  >
+                  <Link to="/dashboard" style={{ 
+                    color: 'white', 
+                    textDecoration: 'none', 
+                    opacity: 0.85,
+                    fontSize: theme.typography.fontSize.sm,
+                    transition: theme.transitions.fast,
+                  }}>
                     Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/kiosk" style={{ 
+                    color: 'white', 
+                    textDecoration: 'none', 
+                    opacity: 0.85,
+                    fontSize: theme.typography.fontSize.sm,
+                    transition: theme.transitions.fast,
+                  }}>
+                    Check-In Kiosk
                   </Link>
                 </li>
                 <li>

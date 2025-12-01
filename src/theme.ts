@@ -1,9 +1,9 @@
 // Harry Chapin Food Bank of SWFL Theme - Professional SaaS Design System
 export const theme = {
   colors: {
-    primary: '#E63946',
-    secondary: '#1D3557',
-    accent: '#F77F00',
+    primary: '#B52E39',      // Deep red from logo
+    secondary: '#1A3A5C',    // Navy blue from logo
+    accent: '#D64551',       // Lighter red accent
     success: '#2A9D8F',
     error: '#DC3545',
     warning: '#FFC107',
@@ -11,7 +11,7 @@ export const theme = {
     background: '#F8F9FA',
     white: '#FFFFFF',
     text: {
-      primary: '#1D3557',
+      primary: '#1A3A5C',    // Navy blue for primary text
       secondary: '#6C757D',
       light: '#ADB5BD',
     },

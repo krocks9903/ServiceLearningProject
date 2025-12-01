@@ -30,7 +30,7 @@ jobs:
       run: npm run lighthouse
 
     - name: Upload Lighthouse results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lighthouse-results
         path: .lighthouseci/
@@ -58,7 +58,7 @@ jobs:
       run: npm run analyze
 
     - name: Upload bundle analysis
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: bundle-analysis
         path: dist/
@@ -86,7 +86,7 @@ jobs:
       run: npm run test:web-vitals
 
     - name: Upload Web Vitals report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: web-vitals-report
         path: web-vitals-report/

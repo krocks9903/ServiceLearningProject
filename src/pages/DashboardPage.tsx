@@ -1,38 +1,64 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
 import { theme } from "../theme"
 import { supabase } from "../services/supabaseClient"
+import Calendar from "../components/shared/Calendar"
 
 export default function DashboardPage() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [showAddHoursModal, setShowAddHoursModal] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null)
   const [newHoursData, setNewHoursData] = useState({
-    event_name: '',
     hours: '',
     log_date: new Date().toISOString().split('T')[0],
     description: ''
   })
+  const [calendarEvents, setCalendarEvents] = useState<Array<any>>([])
   
   // Dashboard data state
-  const [dashboardData, setDashboardData] = useState({
+  const [dashboardData, setDashboardData] = useState<{
+    totalHours: number
+    eventsAttended: number
+    upcomingEvents: number
+    hoursThisMonth: number
+    eventsThisMonth: number
+    hoursTarget: number
+    recentHours: Array<{
+      date: string
+      event: string
+      hours: number
+      status: string
+    }>
+    upcomingEventList: Array<{
+      id: string
+      title: string
+      start_date: string
+      status: string
+      location?: string
+    }>
+  }>({
     totalHours: 0,
     eventsAttended: 0,
     upcomingEvents: 0,
-    achievements: 0,
     hoursThisMonth: 0,
     eventsThisMonth: 0,
     hoursTarget: 100,
     recentHours: [],
-    upcomingEventList: [],
-    achievementsList: []
+    upcomingEventList: []
   })
 
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 5000)
+  }
+
   const handleAddHours = async () => {
-    if (!user || !newHoursData.event_name || !newHoursData.hours) {
-      alert('Please fill in all required fields')
+    if (!user || !newHoursData.hours) {
+      showNotification('error', 'Please fill in all required fields')
       return
     }
 
@@ -41,34 +67,35 @@ export default function DashboardPage() {
         .from('hour_logs')
         .insert({
           volunteer_id: user.id,
-          event_name: newHoursData.event_name,
           hours: parseFloat(newHoursData.hours),
           log_date: newHoursData.log_date,
           description: newHoursData.description,
-          verified_at: null // Needs admin verification
+          verified_at: null
         })
 
       if (error) {
         console.error('Error adding hours:', error)
-        alert('Error adding hours: ' + error.message)
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        showNotification('error', `Failed to add hours: ${error.message || 'Please try again.'}`)
         return
       }
 
-      // Reset form and close modal
       setNewHoursData({
-        event_name: '',
         hours: '',
         log_date: new Date().toISOString().split('T')[0],
         description: ''
       })
       setShowAddHoursModal(false)
-
-      // Refresh dashboard data
       await fetchDashboardData()
-      alert('Hours added successfully! They will be verified by an administrator.')
+      showNotification('success', 'Hours submitted successfully! Awaiting verification.')
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('Unexpected error occurred')
+      showNotification('error', 'An unexpected error occurred')
     }
   }
 
@@ -76,64 +103,47 @@ export default function DashboardPage() {
     if (!user) return
     
     try {
-      // Fetch volunteer assignments for hours calculation
-      const { data: assignments, error: assignmentsError } = await supabase
+      const { data: assignments } = await supabase
         .from('volunteer_assignments')
-        .select(`
-          *,
-          shift:shifts(*),
-          event:events(*)
-        `)
+        .select('*')
         .eq('volunteer_id', user.id)
 
-      if (assignmentsError) {
-        console.error('Error fetching assignments:', assignmentsError)
-      }
-
-      // Fetch hour logs for actual hours calculation
-      const { data: hourLogs, error: hourLogsError } = await supabase
+      const { data: hourLogs } = await supabase
         .from('hour_logs')
         .select('*')
         .eq('volunteer_id', user.id)
         .order('log_date', { ascending: false })
 
-      if (hourLogsError) {
-        console.error('Error fetching hour logs:', hourLogsError)
-      }
-
-      // Fetch upcoming events that the user is registered for
-      // First get all assignments for the user
-      const { data: allAssignments, error: allAssignmentsError } = await supabase
+      const { data: allAssignments } = await supabase
         .from('volunteer_assignments')
         .select(`
           *,
-          event:events(*)
+          events:event_id (
+            id,
+            title,
+            start_date,
+            end_date,
+            location,
+            description
+          )
         `)
         .eq('volunteer_id', user.id)
-        .eq('status', 'registered')
 
-      // Filter for upcoming events on the client side
       const upcomingEvents = allAssignments?.filter(assignment => {
-        if (!assignment.event?.start_date) return false
-        const eventDate = new Date(assignment.event.start_date)
+        if (!assignment.events?.start_date) return false
+        const eventDate = new Date(assignment.events.start_date)
         return eventDate > new Date()
       }) || []
 
-      if (allAssignmentsError) {
-        console.error('Error fetching upcoming events:', allAssignmentsError)
-      }
-
-      // Calculate real statistics
-      const totalHours = hourLogs?.reduce((sum, log) => sum + (log.hours || 0), 0) || 0
+      // Only count verified/approved hours
+      const totalHours = hourLogs?.filter(log => log.verified_at).reduce((sum, log) => sum + (log.hours || 0), 0) || 0
       const currentMonth = new Date().getMonth()
       const currentYear = new Date().getFullYear()
       
       const hoursThisMonth = hourLogs?.filter(log => {
         if (!log.log_date) return false
         const logDate = new Date(log.log_date)
-        const logMonth = logDate.getMonth()
-        const logYear = logDate.getFullYear()
-        return logMonth === currentMonth && logYear === currentYear
+        return logDate.getMonth() === currentMonth && logDate.getFullYear() === currentYear && log.verified_at
       }).reduce((sum, log) => sum + (log.hours || 0), 0) || 0
 
       const eventsAttended = assignments?.filter(assignment => 
@@ -141,64 +151,117 @@ export default function DashboardPage() {
       ).length || 0
 
       const eventsThisMonth = assignments?.filter(assignment => {
-        if (!assignment.event?.start_date) return false
-        const eventDate = new Date(assignment.event.start_date)
-        return eventDate.getMonth() === currentMonth && 
-               eventDate.getFullYear() === currentYear &&
+        if (!assignment.created_at) return false
+        const assignmentDate = new Date(assignment.created_at)
+        return assignmentDate.getMonth() === currentMonth && 
+               assignmentDate.getFullYear() === currentYear &&
                (assignment.status === 'checked_in' || assignment.status === 'completed')
       }).length || 0
 
-      // Prepare recent hours data from hour logs
       const recentHours = hourLogs?.slice(0, 5).map(log => ({
         date: log.log_date,
-        event: log.event_name || 'Volunteer Activity',
+        event: log.description || 'Volunteer Activity',
         hours: log.hours || 0,
         status: log.verified_at ? 'Approved' : 'Pending'
       })) || []
 
-      // Prepare upcoming events data
       const upcomingEventList = upcomingEvents?.map(assignment => ({
-        id: assignment.event?.id || assignment.id,
-        title: assignment.event?.title || 'Event',
-        start_date: assignment.event?.start_date || '',
+        id: assignment.events?.id || assignment.event_id,
+        title: assignment.events?.title || 'Event',
+        start_date: assignment.events?.start_date || '',
+        location: assignment.events?.location || '',
         status: assignment.status
       })) || []
 
-      // For now, we'll use a simple achievement system based on hours
-      // In the future, this could be a separate achievements table
-      const achievementsList = []
-      if (totalHours >= 10) {
-        achievementsList.push({ id: '1', title: 'First 10 Hours', awardedDate: new Date().toISOString() })
-      }
-      if (totalHours >= 25) {
-        achievementsList.push({ id: '2', title: '25 Hours Milestone', awardedDate: new Date().toISOString() })
-      }
-      if (totalHours >= 50) {
-        achievementsList.push({ id: '3', title: '50 Hours Achievement', awardedDate: new Date().toISOString() })
-      }
-      if (eventsAttended >= 5) {
-        achievementsList.push({ id: '4', title: 'Event Veteran', awardedDate: new Date().toISOString() })
-      }
-      if (hoursThisMonth >= 20) {
-        achievementsList.push({ id: '5', title: 'Monthly Champion', awardedDate: new Date().toISOString() })
-      }
-
-      const realData = {
-        totalHours: Math.round(totalHours * 100) / 100, // Round to 2 decimal places
+      setDashboardData({
+        totalHours: Math.round(totalHours * 100) / 100,
         eventsAttended,
         upcomingEvents: upcomingEventList.length,
-        achievements: achievementsList.length,
         hoursThisMonth: Math.round(hoursThisMonth * 100) / 100,
         eventsThisMonth,
-        hoursTarget: 100, // This could be configurable per user
+        hoursTarget: 100,
         recentHours,
-        upcomingEventList,
-        achievementsList
-      }
-
-      setDashboardData(realData)
+        upcomingEventList
+      })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+    }
+  }
+
+  const fetchCalendarEvents = async () => {
+    if (!user) return
+
+    try {
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, title, start_date, end_date, location, status')
+        .gte('end_date', new Date().toISOString())
+        .eq('status', 'active')
+        .order('start_date', { ascending: true })
+        .limit(20)
+
+      const { data: assignments } = await supabase
+        .from('volunteer_assignments')
+        .select(`
+          id,
+          status,
+          created_at,
+          events:event_id (
+            id,
+            title,
+            start_date,
+            end_date,
+            location
+          )
+        `)
+        .eq('volunteer_id', user.id)
+
+      const calendarEventsData: Array<any> = []
+
+      if (events) {
+        events.forEach(event => {
+          const isRegistered = assignments?.some((a: any) => {
+            const assignmentEvents = a.events
+            return assignmentEvents?.id === event.id
+          })
+          calendarEventsData.push({
+            id: `event-${event.id}`,
+            title: event.title,
+            start: new Date(event.start_date),
+            end: new Date(event.end_date),
+            resource: { type: 'event', ...event },
+            color: isRegistered ? theme.colors.success : theme.colors.neutral[400]
+          })
+        })
+      }
+
+      if (assignments) {
+        assignments.forEach((assignment: any) => {
+          if (assignment.events) {
+            const statusColor = 
+              assignment.status === 'completed' ? theme.colors.success : 
+              assignment.status === 'checked_in' ? theme.colors.warning : 
+              theme.colors.info
+            
+            calendarEventsData.push({
+              id: `assignment-${assignment.id}`,
+              title: `${assignment.events.title} (${assignment.status})`,
+              start: new Date(assignment.events.start_date),
+              end: new Date(assignment.events.end_date),
+              resource: { 
+                type: 'assignment', 
+                assignmentStatus: assignment.status,
+                ...assignment 
+              },
+              color: statusColor
+            })
+          }
+        })
+      }
+
+      setCalendarEvents(calendarEventsData)
+    } catch (error) {
+      console.error('Error fetching calendar events:', error)
     }
   }
 
@@ -208,31 +271,561 @@ export default function DashboardPage() {
     } else {
       setLoading(false)
       fetchDashboardData()
+      fetchCalendarEvents()
     }
   }, [user, navigate])
 
   if (loading) {
     return (
-      <div style={{ 
-        padding: '4rem', 
-        textAlign: 'center',
-        fontFamily: theme.typography.fontFamily,
-      }}>
-        <div style={{
-          display: 'inline-block',
-          width: '40px',
-          height: '40px',
-          border: `3px solid ${theme.colors.neutral[300]}`,
-          borderTop: `3px solid ${theme.colors.primary}`,
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }}></div>
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loadingText}>Loading your dashboard...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
         `}</style>
+      </div>
+    )
+  }
+
+  const progressPercentage = Math.min((dashboardData.totalHours / dashboardData.hoursTarget) * 100, 100)
+  const monthProgressPercentage = Math.min((dashboardData.hoursThisMonth / 20) * 100, 100)
+
+  return (
+    <div style={styles.container}>
+      {/* Notification Banner */}
+      {notification && (
+        <div style={{
+          ...styles.notification,
+          backgroundColor: notification.type === 'success' ? '#d4edda' : '#f8d7da',
+          color: notification.type === 'success' ? '#155724' : '#721c24',
+          borderColor: notification.type === 'success' ? '#c3e6cb' : '#f5c6cb',
+        }}>
+          <div style={styles.notificationContent}>
+            <span>{notification.type === 'success' ? '✓' : '⚠'} {notification.message}</span>
+            <button
+              onClick={() => setNotification(null)}
+              style={styles.notificationClose}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section */}
+      <div style={styles.hero}>
+        <div style={styles.heroContent}>
+          <h1 style={styles.heroTitle}>
+            Welcome back, {profile?.first_name || 'Volunteer'}! 👋
+          </h1>
+          <p style={styles.heroSubtitle}>
+            Track your impact and manage your volunteer activities
+          </p>
+        </div>
+        <div style={styles.heroActions}>
+          <button
+            onClick={() => navigate('/events')}
+            style={styles.heroPrimaryButton}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            Browse Events
+          </button>
+          <button
+            onClick={() => setShowAddHoursModal(true)}
+            style={styles.heroSecondaryButton}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.colors.neutral[100]}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            Log Hours
+          </button>
+        </div>
+      </div>
+
+      {/* Notification Banner */}
+      {notification && (
+        <div style={{
+          ...styles.notificationBanner,
+          backgroundColor: notification.type === 'success' ? '#d1fae5' : '#fee2e2',
+          borderLeft: `4px solid ${notification.type === 'success' ? theme.colors.success : theme.colors.error}`,
+        }}>
+          <span style={{ 
+            color: notification.type === 'success' ? '#065f46' : '#991b1b',
+            fontWeight: theme.typography.fontWeight.medium 
+          }}>
+            {notification.type === 'success' ? '✓ ' : '⚠️ '}
+            {notification.message}
+          </span>
+          <button 
+            onClick={() => setNotification(null)}
+            style={styles.notificationClose}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Pending Hours Info */}
+      {dashboardData.recentHours.filter(log => log.status === 'Pending').length > 0 && (
+        <div style={styles.pendingHoursInfo}>
+          <div style={styles.pendingHoursIcon}>⏱️</div>
+          <div>
+            <div style={styles.pendingHoursTitle}>
+              {dashboardData.recentHours.filter(log => log.status === 'Pending').length} hour log(s) awaiting approval
+            </div>
+            <div style={styles.pendingHoursText}>
+              Your submitted hours are being reviewed by an administrator. Once approved, they'll be added to your total.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Volunteer Check-In Section */}
+      <div style={{
+        backgroundColor: theme.colors.white,
+        padding: '1.5rem',
+        borderRadius: theme.borderRadius.lg,
+        boxShadow: theme.shadows.md,
+        marginBottom: '2rem',
+        border: `2px solid ${theme.colors.primary[200]}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        background: `linear-gradient(135deg, ${theme.colors.primary}10 0%, ${theme.colors.secondary}10 100%)`
+      }}>
+        <div style={{ flex: 1, minWidth: '250px' }}>
+          <h3 style={{
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.primary,
+            marginBottom: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            📍 Volunteer Check-In
+          </h3>
+          <p style={{
+            fontSize: theme.typography.fontSize.sm,
+            color: theme.colors.text.secondary,
+            margin: 0,
+            lineHeight: '1.5'
+          }}>
+            Check in when you arrive at the volunteer location using your volunteer number or email
+          </p>
+        </div>
+        <Link to="/kiosk" style={{ textDecoration: 'none' }}>
+          <button style={{
+            backgroundColor: theme.colors.primary,
+            color: 'white',
+            border: 'none',
+            padding: '1rem 2rem',
+            borderRadius: theme.borderRadius.base,
+            fontSize: theme.typography.fontSize.base,
+            fontWeight: theme.typography.fontWeight.semibold,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: theme.shadows.md,
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#c72e3a'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+            e.currentTarget.style.boxShadow = theme.shadows.lg
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = theme.colors.primary
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = theme.shadows.md
+          }}>
+            Go to Check-In Kiosk →
+          </button>
+        </Link>
+      </div>
+
+      {/* Quick Stats Cards */}
+      <div style={styles.statsGrid}>
+        <div style={{...styles.statCard, borderLeft: `4px solid ${theme.colors.primary}`}}>
+          <div style={styles.statIcon}>⏱️</div>
+          <div style={styles.statContent}>
+            <div style={styles.statValue}>{dashboardData.totalHours}</div>
+            <div style={styles.statLabel}>Total Hours</div>
+            <div style={styles.statSubtext}>
+              {dashboardData.hoursThisMonth} hrs this month
+            </div>
+          </div>
+        </div>
+
+        <div style={{...styles.statCard, borderLeft: `4px solid ${theme.colors.success}`}}>
+          <div style={styles.statIcon}>📅</div>
+          <div style={styles.statContent}>
+            <div style={styles.statValue}>{dashboardData.eventsAttended}</div>
+            <div style={styles.statLabel}>Events Attended</div>
+            <div style={styles.statSubtext}>
+              {dashboardData.eventsThisMonth} this month
+            </div>
+          </div>
+        </div>
+
+        <div style={{...styles.statCard, borderLeft: `4px solid ${theme.colors.info}`}}>
+          <div style={styles.statIcon}>🎯</div>
+          <div style={styles.statContent}>
+            <div style={styles.statValue}>{dashboardData.upcomingEvents}</div>
+            <div style={styles.statLabel}>Upcoming Events</div>
+            <div style={styles.statSubtext}>
+              {dashboardData.upcomingEvents > 0 ? 'See details below' : 'Register for events'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{...styles.statCard, borderLeft: `4px solid ${theme.colors.warning}`}}>
+          <div style={styles.statIcon}>🏆</div>
+          <div style={styles.statContent}>
+            <div style={styles.statValue}>{Math.round(progressPercentage)}%</div>
+            <div style={styles.statLabel}>Goal Progress</div>
+            <div style={styles.statSubtext}>
+              {dashboardData.hoursTarget - dashboardData.totalHours > 0 
+                ? `${Math.round(dashboardData.hoursTarget - dashboardData.totalHours)} hrs to goal`
+                : 'Goal achieved!'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Section */}
+      <div style={styles.progressSection}>
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <h2 style={styles.cardTitle}>Annual Goal Progress</h2>
+            <span style={styles.cardBadge}>
+              {dashboardData.totalHours} / {dashboardData.hoursTarget} hrs
+            </span>
+          </div>
+          <div style={styles.cardBody}>
+            <div style={styles.progressBarContainer}>
+              <div 
+                style={{
+                  ...styles.progressBar,
+                  width: `${progressPercentage}%`,
+                  backgroundColor: progressPercentage >= 100 ? theme.colors.success : theme.colors.primary
+                }}
+              />
+            </div>
+            <div style={styles.progressInfo}>
+              <span>{Math.round(progressPercentage)}% Complete</span>
+              {progressPercentage < 100 && (
+                <span>{Math.round(dashboardData.hoursTarget - dashboardData.totalHours)} hours remaining</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <h2 style={styles.cardTitle}>This Month</h2>
+            <span style={styles.cardBadge}>
+              {dashboardData.hoursThisMonth} hrs
+            </span>
+          </div>
+          <div style={styles.cardBody}>
+            <div style={styles.progressBarContainer}>
+              <div 
+                style={{
+                  ...styles.progressBar,
+                  width: `${monthProgressPercentage}%`,
+                  backgroundColor: theme.colors.success
+                }}
+              />
+            </div>
+            <div style={styles.progressInfo}>
+              <span>{Math.round(monthProgressPercentage)}% of 20 hr goal</span>
+              <span>{dashboardData.eventsThisMonth} events attended</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Two Column Layout */}
+      <div style={styles.twoColumnGrid}>
+        {/* Upcoming Events */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <h2 style={styles.cardTitle}>Upcoming Events</h2>
+            <button
+              onClick={() => navigate('/events')}
+              style={styles.viewAllButton}
+            >
+              View All →
+            </button>
+          </div>
+          <div style={styles.cardBody}>
+            {dashboardData.upcomingEventList.length > 0 ? (
+              <div style={styles.eventsList}>
+                {dashboardData.upcomingEventList.slice(0, 5).map((event) => {
+                  const eventDate = new Date(event.start_date)
+                  const isToday = eventDate.toDateString() === new Date().toDateString()
+                  const isTomorrow = eventDate.toDateString() === new Date(Date.now() + 86400000).toDateString()
+                  
+                  return (
+                    <div key={event.id} style={styles.eventItem}>
+                      <div style={styles.eventDateBadge}>
+                        <div style={styles.eventDay}>
+                          {eventDate.getDate()}
+                        </div>
+                        <div style={styles.eventMonth}>
+                          {eventDate.toLocaleDateString('en-US', { month: 'short' })}
+                        </div>
+                      </div>
+                      <div style={styles.eventInfo}>
+                        <div style={styles.eventTitle}>{event.title}</div>
+                        <div style={styles.eventMeta}>
+                          <span>{eventDate.toLocaleDateString('en-US', { 
+                            weekday: 'short', 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}</span>
+                          {event.location && <span> • {event.location}</span>}
+                        </div>
+                        {(isToday || isTomorrow) && (
+                          <div style={{
+                            ...styles.eventBadge,
+                            backgroundColor: isToday ? '#fef3c7' : '#dbeafe',
+                            color: isToday ? '#92400e' : '#1e40af'
+                          }}>
+                            {isToday ? 'Today' : 'Tomorrow'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div style={styles.emptyState}>
+                <div style={styles.emptyStateIcon}>📅</div>
+                <p style={styles.emptyStateText}>No upcoming events</p>
+                <button
+                  onClick={() => navigate('/events')}
+                  style={styles.emptyStateButton}
+                >
+                  Browse Available Events
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Hours */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <h2 style={styles.cardTitle}>Recent Hour Logs</h2>
+            <button
+              onClick={() => setShowAddHoursModal(true)}
+              style={styles.viewAllButton}
+            >
+              Add Hours +
+            </button>
+          </div>
+          <div style={styles.cardBody}>
+            {dashboardData.recentHours.length > 0 ? (
+              <div style={styles.hoursList}>
+                {dashboardData.recentHours.map((log, index) => (
+                  <div key={index} style={styles.hoursItem}>
+                    <div style={styles.hoursInfo}>
+                      <div style={styles.hoursEvent}>{log.event}</div>
+                      <div style={styles.hoursDate}>
+                        {new Date(log.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </div>
+                    </div>
+                    <div style={styles.hoursRight}>
+                      <div style={styles.hoursValue}>{log.hours} hrs</div>
+                      <div style={{
+                        ...styles.statusBadge,
+                        backgroundColor: log.status === 'Approved' ? '#d1fae5' : '#fef3c7',
+                        color: log.status === 'Approved' ? '#065f46' : '#92400e'
+                      }}>
+                        {log.status}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={styles.emptyState}>
+                <div style={styles.emptyStateIcon}>⏱️</div>
+                <p style={styles.emptyStateText}>No hours logged yet</p>
+                <button
+                  onClick={() => setShowAddHoursModal(true)}
+                  style={styles.emptyStateButton}
+                >
+                  Log Your First Hours
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Calendar Section */}
+      <div style={styles.card}>
+        <div style={styles.cardHeader}>
+          <h2 style={styles.cardTitle}>Calendar</h2>
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            style={styles.toggleButton}
+          >
+            {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
+          </button>
+        </div>
+        {showCalendar && (
+          <div style={styles.cardBody}>
+            <Calendar
+              events={calendarEvents}
+              onSelectEvent={(event) => {
+                if (event.resource?.type === 'event') {
+                  navigate('/events')
+                }
+              }}
+              height={600}
+              showToolbar={true}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div style={styles.quickActionsGrid}>
+        <button
+          onClick={() => navigate('/events')}
+          style={styles.quickActionCard}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={styles.quickActionIcon}>🔍</div>
+          <div style={styles.quickActionTitle}>Find Events</div>
+          <div style={styles.quickActionDesc}>Browse available opportunities</div>
+        </button>
+
+        <button
+          onClick={() => navigate('/profile')}
+          style={styles.quickActionCard}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={styles.quickActionIcon}>👤</div>
+          <div style={styles.quickActionTitle}>My Profile</div>
+          <div style={styles.quickActionDesc}>Update your information</div>
+        </button>
+
+        <button
+          onClick={() => setShowAddHoursModal(true)}
+          style={styles.quickActionCard}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={styles.quickActionIcon}>📝</div>
+          <div style={styles.quickActionTitle}>Log Hours</div>
+          <div style={styles.quickActionDesc}>Submit volunteer hours</div>
+        </button>
+
+        <button
+          onClick={() => window.open('/Volunteer Handbook 2025.pdf', '_blank')}
+          style={styles.quickActionCard}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <div style={styles.quickActionIcon}>📚</div>
+          <div style={styles.quickActionTitle}>Resources</div>
+          <div style={styles.quickActionDesc}>View handbook & guides</div>
+        </button>
+      </div>
+
+      {/* Add Hours Modal */}
+      {showAddHoursModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowAddHoursModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Log Volunteer Hours</h2>
+              <button
+                onClick={() => setShowAddHoursModal(false)}
+                style={styles.modalCloseButton}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.colors.neutral[100]}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                ×
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Hours Worked *</label>
+                <input
+                  type="number"
+                  value={newHoursData.hours}
+                  onChange={(e) => setNewHoursData({...newHoursData, hours: e.target.value})}
+                  placeholder="0"
+                  step="0.5"
+                  min="0"
+                  style={styles.formInput}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Date *</label>
+                <input
+                  type="date"
+                  value={newHoursData.log_date}
+                  onChange={(e) => setNewHoursData({...newHoursData, log_date: e.target.value})}
+                  style={styles.formInput}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Description (Optional)</label>
+                <textarea
+                  value={newHoursData.description}
+                  onChange={(e) => setNewHoursData({...newHoursData, description: e.target.value})}
+                  placeholder="Describe your volunteer activities..."
+                  rows={3}
+                  style={styles.formTextarea}
+                />
+              </div>
+            </div>
+            <div style={styles.modalFooter}>
+              <button
+                onClick={() => setShowAddHoursModal(false)}
+                style={styles.modalCancelButton}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.colors.neutral[200]}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.colors.neutral[100]}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddHours}
+                style={styles.modalSubmitButton}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#c72e3a'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.colors.primary}
+              >
+                Submit Hours
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     )
   }
@@ -240,29 +833,168 @@ export default function DashboardPage() {
   const styles = {
     container: {
       minHeight: 'calc(100vh - 72px)',
-      backgroundColor: theme.colors.background,
+    backgroundColor: '#f8f9fa',
       fontFamily: theme.typography.fontFamily,
       padding: '2rem',
+    animation: 'fadeIn 0.5s ease',
     } as React.CSSProperties,
     
-    header: {
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '50vh',
+    gap: '1rem',
+  } as React.CSSProperties,
+
+  spinner: {
+    width: '48px',
+    height: '48px',
+    border: `4px solid ${theme.colors.neutral[200]}`,
+    borderTop: `4px solid ${theme.colors.primary}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  } as React.CSSProperties,
+
+  loadingText: {
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.fontSize.base,
+  } as React.CSSProperties,
+
+  notification: {
+    position: 'fixed' as const,
+    top: '90px',
+    right: '2rem',
+    zIndex: 9999,
+    padding: '1rem 1.5rem',
+    borderRadius: theme.borderRadius.lg,
+    boxShadow: theme.shadows.lg,
+    border: '1px solid',
+    animation: 'fadeIn 0.3s ease',
+    minWidth: '300px',
+  } as React.CSSProperties,
+
+  notificationBanner: {
+    padding: '1rem 1.5rem',
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: '1.5rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    animation: 'fadeIn 0.3s ease',
+  } as React.CSSProperties,
+
+  notificationClose: {
+    background: 'none',
+    border: 'none',
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+    color: 'inherit',
+    opacity: 0.7,
+    transition: theme.transitions.fast,
+  } as React.CSSProperties,
+
+  pendingHoursInfo: {
+    display: 'flex',
+    gap: '1rem',
+    padding: '1rem 1.5rem',
+    backgroundColor: '#fef3c7',
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: '1.5rem',
+    borderLeft: `4px solid ${theme.colors.warning}`,
+    animation: 'fadeIn 0.3s ease',
+  } as React.CSSProperties,
+
+  pendingHoursIcon: {
+    fontSize: '2rem',
+    flexShrink: 0,
+  } as React.CSSProperties,
+
+  pendingHoursTitle: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: '#92400e',
+    marginBottom: '0.25rem',
+  } as React.CSSProperties,
+
+  pendingHoursText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: '#78350f',
+    lineHeight: theme.typography.lineHeight.relaxed,
+  } as React.CSSProperties,
+
+  notificationContent: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '1rem',
+  } as React.CSSProperties,
+
+  hero: {
+    backgroundColor: 'white',
+    borderRadius: theme.borderRadius.xl,
+    padding: '2.5rem',
       marginBottom: '2rem',
-      textAlign: 'center' as const,
+    boxShadow: theme.shadows.sm,
+    border: `1px solid ${theme.colors.neutral[200]}`,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
+    gap: '2rem',
     } as React.CSSProperties,
     
-    headerTitle: {
+  heroContent: {
+    flex: '1',
+    minWidth: '250px',
+  } as React.CSSProperties,
+
+  heroTitle: {
       fontSize: theme.typography.fontSize['3xl'],
       fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.text.primary,
       marginBottom: '0.5rem',
+    lineHeight: theme.typography.lineHeight.tight,
     } as React.CSSProperties,
     
-    headerSubtitle: {
+  heroSubtitle: {
       fontSize: theme.typography.fontSize.lg,
       color: theme.colors.text.secondary,
+    lineHeight: theme.typography.lineHeight.relaxed,
     } as React.CSSProperties,
 
-    // Top Stats Grid
+  heroActions: {
+    display: 'flex',
+    gap: '1rem',
+    flexWrap: 'wrap' as const,
+  } as React.CSSProperties,
+
+  heroPrimaryButton: {
+    backgroundColor: theme.colors.primary,
+    color: 'white',
+    padding: '0.875rem 2rem',
+    borderRadius: theme.borderRadius.lg,
+    border: 'none',
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: theme.shadows.sm,
+  } as React.CSSProperties,
+
+  heroSecondaryButton: {
+    backgroundColor: 'transparent',
+    color: theme.colors.primary,
+    padding: '0.875rem 2rem',
+    borderRadius: theme.borderRadius.lg,
+    border: `2px solid ${theme.colors.primary}`,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as React.CSSProperties,
+
     statsGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -272,324 +1004,347 @@ export default function DashboardPage() {
     
     statCard: {
       backgroundColor: 'white',
-      padding: '1.5rem',
+    padding: '1.75rem',
       borderRadius: theme.borderRadius.lg,
-      boxShadow: theme.shadows.md,
+    boxShadow: theme.shadows.sm,
       border: `1px solid ${theme.colors.neutral[200]}`,
-      textAlign: 'center' as const,
+    display: 'flex',
+    gap: '1rem',
       transition: 'all 0.2s ease',
+    cursor: 'default',
     } as React.CSSProperties,
     
-    statTitle: {
-      fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.medium,
-      color: theme.colors.text.secondary,
-      textTransform: 'uppercase' as const,
-      letterSpacing: '0.5px',
-      marginBottom: '0.5rem',
+  statIcon: {
+    fontSize: '2.5rem',
+    lineHeight: '1',
+  } as React.CSSProperties,
+
+  statContent: {
+    flex: '1',
     } as React.CSSProperties,
     
     statValue: {
-      fontSize: '2.5rem',
+    fontSize: theme.typography.fontSize['3xl'],
       fontWeight: theme.typography.fontWeight.bold,
-      color: theme.colors.primary,
-      marginBottom: '0.25rem',
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.lineHeight.tight,
     } as React.CSSProperties,
     
-    statSubtitle: {
+  statLabel: {
       fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
       color: theme.colors.text.secondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    marginTop: '0.25rem',
     } as React.CSSProperties,
 
-    // Main Grid Layout
-    mainGrid: {
+  statSubtext: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.text.secondary,
+    marginTop: '0.5rem',
+  } as React.CSSProperties,
+
+  progressSection: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(12, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
       gap: '1.5rem',
+    marginBottom: '2rem',
     } as React.CSSProperties,
     
-    section: {
-      gridColumn: 'span 12',
-    } as React.CSSProperties,
-    
-    sectionTitle: {
-      fontSize: theme.typography.fontSize['2xl'],
-      fontWeight: theme.typography.fontWeight.bold,
-      color: theme.colors.text.primary,
-      marginBottom: '1rem',
+  twoColumnGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+    gap: '1.5rem',
+    marginBottom: '2rem',
     } as React.CSSProperties,
     
     card: {
       backgroundColor: 'white',
       borderRadius: theme.borderRadius.lg,
-      boxShadow: theme.shadows.md,
+    boxShadow: theme.shadows.sm,
       border: `1px solid ${theme.colors.neutral[200]}`,
       overflow: 'hidden',
     } as React.CSSProperties,
     
-    cardContent: {
-      padding: '1.5rem',
-    } as React.CSSProperties,
-
-    // Hours Tracker Styles
-    progressSection: {
-      marginBottom: '2rem',
-    } as React.CSSProperties,
-    
-    progressHeader: {
+  cardHeader: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: '0.5rem',
+    padding: '1.5rem',
+    borderBottom: `1px solid ${theme.colors.neutral[200]}`,
     } as React.CSSProperties,
     
-    progressLabel: {
-      fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.medium,
+  cardTitle: {
+    fontSize: theme.typography.fontSize.xl,
+    fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.text.primary,
+    margin: 0,
     } as React.CSSProperties,
     
-    progressValue: {
-      fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.bold,
-      color: theme.colors.primary,
+  cardBadge: {
+    backgroundColor: theme.colors.neutral[100],
+    color: theme.colors.text.primary,
+    padding: '0.375rem 0.75rem',
+    borderRadius: theme.borderRadius.full,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
     } as React.CSSProperties,
     
-    progressBar: {
+  cardBody: {
+    padding: '1.5rem',
+  } as React.CSSProperties,
+
+  progressBarContainer: {
       width: '100%',
-      height: '8px',
+    height: '12px',
       backgroundColor: theme.colors.neutral[200],
-      borderRadius: '4px',
+    borderRadius: theme.borderRadius.full,
       overflow: 'hidden',
     } as React.CSSProperties,
     
-    progressFill: {
+  progressBar: {
       height: '100%',
-      backgroundColor: theme.colors.primary,
-      transition: 'width 0.3s ease',
+    borderRadius: theme.borderRadius.full,
+    transition: 'width 1s ease',
     } as React.CSSProperties,
 
-    // Chart Styles
-    chartPlaceholder: {
-      marginBottom: '2rem',
+  progressInfo: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: '0.75rem',
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.text.secondary,
     } as React.CSSProperties,
     
-    chartTitle: {
-      fontSize: theme.typography.fontSize.lg,
-      fontWeight: theme.typography.fontWeight.semibold,
-      color: theme.colors.text.primary,
-      marginBottom: '1rem',
+  viewAllButton: {
+    backgroundColor: 'transparent',
+    color: theme.colors.primary,
+    border: 'none',
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
+    cursor: 'pointer',
+    padding: '0.25rem 0.5rem',
+    borderRadius: theme.borderRadius.base,
+    transition: 'all 0.2s ease',
     } as React.CSSProperties,
     
-    chartBars: {
+  toggleButton: {
+    backgroundColor: theme.colors.primary,
+    color: 'white',
+    border: 'none',
+    padding: '0.5rem 1rem',
+    borderRadius: theme.borderRadius.base,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  } as React.CSSProperties,
+
+  eventsList: {
       display: 'flex',
-      alignItems: 'end',
+    flexDirection: 'column' as const,
       gap: '1rem',
-      height: '120px',
-      padding: '1rem 0',
     } as React.CSSProperties,
     
-    chartBar: {
-      flex: 1,
+  eventItem: {
       display: 'flex',
-      flexDirection: 'column' as const,
-      alignItems: 'center',
-      gap: '0.5rem',
+    gap: '1rem',
+    padding: '1rem',
+    backgroundColor: theme.colors.neutral[50],
+    borderRadius: theme.borderRadius.lg,
+    border: `1px solid ${theme.colors.neutral[200]}`,
+    transition: 'all 0.2s ease',
     } as React.CSSProperties,
     
-    chartBarFill: {
-      width: '100%',
+  eventDateBadge: {
+    minWidth: '60px',
+    textAlign: 'center' as const,
       backgroundColor: theme.colors.primary,
-      borderRadius: '2px 2px 0 0',
-      minHeight: '4px',
+    color: 'white',
+    borderRadius: theme.borderRadius.lg,
+    padding: '0.75rem 0.5rem',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center',
     } as React.CSSProperties,
     
-    chartBarLabel: {
-      fontSize: theme.typography.fontSize.xs,
-      color: theme.colors.text.secondary,
-      fontWeight: theme.typography.fontWeight.medium,
+  eventDay: {
+    fontSize: theme.typography.fontSize['2xl'],
+    fontWeight: theme.typography.fontWeight.bold,
+    lineHeight: '1',
     } as React.CSSProperties,
 
-    // Table Styles
-    tableSection: {
-      marginTop: '1rem',
+  eventMonth: {
+    fontSize: theme.typography.fontSize.xs,
+    textTransform: 'uppercase' as const,
+    marginTop: '0.25rem',
+    opacity: 0.9,
     } as React.CSSProperties,
     
-    tableHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '1rem',
+  eventInfo: {
+    flex: '1',
     } as React.CSSProperties,
     
-    tableTitle: {
-      fontSize: theme.typography.fontSize.lg,
+  eventTitle: {
+    fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.semibold,
       color: theme.colors.text.primary,
-      margin: 0,
+    marginBottom: '0.25rem',
     } as React.CSSProperties,
     
-    addHoursButton: {
-      backgroundColor: theme.colors.primary,
-      color: 'white',
-      border: 'none',
-      padding: '0.5rem 1rem',
-      borderRadius: theme.borderRadius.base,
+  eventMeta: {
       fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'background-color 0.2s ease',
+    color: theme.colors.text.secondary,
     } as React.CSSProperties,
     
-    table: {
-      border: `1px solid ${theme.colors.neutral[200]}`,
-      borderRadius: theme.borderRadius.base,
-      overflow: 'hidden',
+  eventBadge: {
+    display: 'inline-block',
+    marginTop: '0.5rem',
+    padding: '0.25rem 0.75rem',
+    borderRadius: theme.borderRadius.full,
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.medium,
     } as React.CSSProperties,
     
-    tableRow: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 2fr 1fr 1fr',
-      borderBottom: `1px solid ${theme.colors.neutral[200]}`,
+  hoursList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '0.75rem',
     } as React.CSSProperties,
     
-    tableHeaderCell: {
-      padding: '0.75rem',
-      backgroundColor: theme.colors.neutral[50],
-      fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.semibold,
-      color: theme.colors.text.primary,
-      borderRight: `1px solid ${theme.colors.neutral[200]}`,
-    } as React.CSSProperties,
-    
-    tableCell: {
-      padding: '0.75rem',
-      fontSize: theme.typography.fontSize.sm,
-      color: theme.colors.text.primary,
-      borderRight: `1px solid ${theme.colors.neutral[200]}`,
-    } as React.CSSProperties,
-
-    // Event Styles
-    eventItem: {
+  hoursItem: {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '1rem',
-      borderBottom: `1px solid ${theme.colors.neutral[200]}`,
+    backgroundColor: theme.colors.neutral[50],
+    borderRadius: theme.borderRadius.lg,
+    border: `1px solid ${theme.colors.neutral[200]}`,
     } as React.CSSProperties,
     
-    eventInfo: {
-      flex: 1,
+  hoursInfo: {
+    flex: '1',
     } as React.CSSProperties,
     
-    eventTitle: {
+  hoursEvent: {
       fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.semibold,
+    fontWeight: theme.typography.fontWeight.medium,
       color: theme.colors.text.primary,
       marginBottom: '0.25rem',
     } as React.CSSProperties,
     
-    eventDate: {
+  hoursDate: {
       fontSize: theme.typography.fontSize.sm,
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
     
-    eventActions: {
+  hoursRight: {
       display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
+    flexDirection: 'column' as const,
+    alignItems: 'flex-end',
+    gap: '0.5rem',
     } as React.CSSProperties,
     
-    eventStatus: {
-      fontSize: theme.typography.fontSize.xs,
-      fontWeight: theme.typography.fontWeight.medium,
-      color: theme.colors.success,
-      backgroundColor: `${theme.colors.success}20`,
-      padding: '0.25rem 0.5rem',
-      borderRadius: theme.borderRadius.full,
-      textTransform: 'uppercase' as const,
+  hoursValue: {
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primary,
     } as React.CSSProperties,
     
-    viewDetailsButton: {
-      backgroundColor: 'transparent',
-      color: theme.colors.primary,
-      border: `1px solid ${theme.colors.primary}`,
+  statusBadge: {
       padding: '0.25rem 0.75rem',
-      borderRadius: theme.borderRadius.base,
+    borderRadius: theme.borderRadius.full,
       fontSize: theme.typography.fontSize.xs,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
+    fontWeight: theme.typography.fontWeight.medium,
     } as React.CSSProperties,
 
-    // Achievement Styles
-    achievementsGrid: {
+  emptyState: {
+    textAlign: 'center' as const,
+    padding: '3rem 1rem',
+    } as React.CSSProperties,
+    
+  emptyStateIcon: {
+    fontSize: '4rem',
+    marginBottom: '1rem',
+    } as React.CSSProperties,
+    
+  emptyStateText: {
+      fontSize: theme.typography.fontSize.base,
+    color: theme.colors.text.secondary,
+    marginBottom: '1.5rem',
+    } as React.CSSProperties,
+    
+  emptyStateButton: {
+    backgroundColor: theme.colors.primary,
+    color: 'white',
+    padding: '0.75rem 1.5rem',
+    borderRadius: theme.borderRadius.lg,
+    border: 'none',
+      fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    } as React.CSSProperties,
+
+  quickActionsGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
       gap: '1rem',
+    marginBottom: '2rem',
     } as React.CSSProperties,
     
-    achievementCard: {
-      backgroundColor: theme.colors.neutral[50],
-      padding: '1rem',
-      borderRadius: theme.borderRadius.base,
-      border: `1px solid ${theme.colors.neutral[200]}`,
+  quickActionCard: {
+      backgroundColor: 'white',
+    padding: '1.5rem',
+    borderRadius: theme.borderRadius.lg,
+    border: `2px solid ${theme.colors.neutral[200]}`,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
       textAlign: 'center' as const,
+    boxShadow: theme.shadows.sm,
     } as React.CSSProperties,
-    
-    achievementTitle: {
-      fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.semibold,
-      color: theme.colors.text.primary,
-      marginBottom: '0.5rem',
-    } as React.CSSProperties,
-    
-    achievementDate: {
-      fontSize: theme.typography.fontSize.sm,
+
+  quickActionIcon: {
+    fontSize: '2.5rem',
+    marginBottom: '0.75rem',
+  } as React.CSSProperties,
+
+  quickActionTitle: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: '0.25rem',
+  } as React.CSSProperties,
+
+  quickActionDesc: {
+    fontSize: theme.typography.fontSize.sm,
       color: theme.colors.text.secondary,
     } as React.CSSProperties,
 
-    // Quick Links Styles
-    quickLinksGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '1rem',
-    } as React.CSSProperties,
-    
-    quickLinkButton: {
-      backgroundColor: 'white',
-      color: theme.colors.primary,
-      border: `2px solid ${theme.colors.primary}`,
-      padding: '1rem',
-      borderRadius: theme.borderRadius.base,
-      fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      textAlign: 'center' as const,
-    } as React.CSSProperties,
-
-    // Modal styles
     modalOverlay: {
       position: 'fixed' as const,
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1000,
+    zIndex: 9999,
+    padding: '1rem',
     } as React.CSSProperties,
 
     modal: {
       backgroundColor: 'white',
-      borderRadius: theme.borderRadius.lg,
-      boxShadow: theme.shadows.lg,
-      width: '90%',
+    borderRadius: theme.borderRadius.xl,
+    boxShadow: theme.shadows.xl,
+    width: '100%',
       maxWidth: '500px',
       maxHeight: '90vh',
       overflow: 'auto',
+    animation: 'fadeIn 0.2s ease',
     } as React.CSSProperties,
 
     modalHeader: {
@@ -610,12 +1365,18 @@ export default function DashboardPage() {
     modalCloseButton: {
       background: 'none',
       border: 'none',
-      fontSize: '1.5rem',
+    fontSize: '2rem',
       cursor: 'pointer',
       color: theme.colors.text.secondary,
       padding: '0.25rem',
       borderRadius: theme.borderRadius.base,
-      transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
+    width: '40px',
+    height: '40px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    lineHeight: '1',
     } as React.CSSProperties,
 
     modalBody: {
@@ -623,22 +1384,22 @@ export default function DashboardPage() {
     } as React.CSSProperties,
 
     formGroup: {
-      marginBottom: '1rem',
+    marginBottom: '1.25rem',
     } as React.CSSProperties,
 
     formLabel: {
       display: 'block',
       fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.medium,
-      color: theme.colors.text.secondary,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text.primary,
       marginBottom: '0.5rem',
     } as React.CSSProperties,
 
     formInput: {
       width: '100%',
       padding: '0.75rem',
-      border: `1px solid ${theme.colors.neutral[300]}`,
-      borderRadius: theme.borderRadius.base,
+    border: `2px solid ${theme.colors.neutral[300]}`,
+    borderRadius: theme.borderRadius.lg,
       fontSize: theme.typography.fontSize.base,
       fontFamily: theme.typography.fontFamily,
       transition: 'border-color 0.2s ease',
@@ -648,8 +1409,8 @@ export default function DashboardPage() {
     formTextarea: {
       width: '100%',
       padding: '0.75rem',
-      border: `1px solid ${theme.colors.neutral[300]}`,
-      borderRadius: theme.borderRadius.base,
+    border: `2px solid ${theme.colors.neutral[300]}`,
+    borderRadius: theme.borderRadius.lg,
       fontSize: theme.typography.fontSize.base,
       fontFamily: theme.typography.fontFamily,
       transition: 'border-color 0.2s ease',
@@ -669,310 +1430,24 @@ export default function DashboardPage() {
       backgroundColor: theme.colors.neutral[100],
       color: theme.colors.text.primary,
       padding: '0.75rem 1.5rem',
-      borderRadius: theme.borderRadius.base,
+    borderRadius: theme.borderRadius.lg,
       border: 'none',
       cursor: 'pointer',
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
-      transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
     } as React.CSSProperties,
 
     modalSubmitButton: {
       backgroundColor: theme.colors.primary,
       color: 'white',
       padding: '0.75rem 1.5rem',
-      borderRadius: theme.borderRadius.base,
+    borderRadius: theme.borderRadius.lg,
       border: 'none',
       cursor: 'pointer',
       fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.medium,
-      transition: 'background-color 0.2s ease',
+    fontWeight: theme.typography.fontWeight.semibold,
+    transition: 'all 0.2s ease',
+    boxShadow: theme.shadows.sm,
     } as React.CSSProperties,
   }
-
-  return (
-    <div style={styles.container}>
-      {/* Welcome Header */}
-      <div style={styles.header}>
-        <h1 style={styles.headerTitle}>
-          Welcome back, {profile?.first_name || 'Volunteer'}!
-        </h1>
-        <p style={styles.headerSubtitle}>
-          Here's your volunteer dashboard with all your activities and achievements.
-        </p>
-      </div>
-
-      {/* Top Stats Grid */}
-      <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
-          <div style={styles.statTitle}>Total Hours Logged</div>
-          <div style={styles.statValue}>{dashboardData.totalHours}</div>
-          <div style={styles.statSubtitle}>This Month: {dashboardData.hoursThisMonth}</div>
-        </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statTitle}>Events Attended</div>
-          <div style={styles.statValue}>{dashboardData.eventsAttended}</div>
-          <div style={styles.statSubtitle}>This Month: {dashboardData.eventsThisMonth || 0}</div>
-        </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statTitle}>Upcoming Events</div>
-          <div style={styles.statValue}>{dashboardData.upcomingEvents}</div>
-          <div style={styles.statSubtitle}>Registered</div>
-        </div>
-        
-        <div style={styles.statCard}>
-          <div style={styles.statTitle}>Achievements Earned</div>
-          <div style={styles.statValue}>{dashboardData.achievements}</div>
-          <div style={styles.statSubtitle}>Total Badges</div>
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div style={styles.mainGrid}>
-        {/* My Hours Tracker Section */}
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>My Hours Tracker</h2>
-          <div style={styles.card}>
-            <div style={styles.cardContent}>
-              {/* Progress Bar */}
-              <div style={styles.progressSection}>
-                <div style={styles.progressHeader}>
-                  <span style={styles.progressLabel}>Total Progress</span>
-                  <span style={styles.progressValue}>
-                    {dashboardData.totalHours} / {dashboardData.hoursTarget} hrs
-                  </span>
-                </div>
-                <div style={styles.progressBar}>
-                  <div 
-                    style={{
-                      ...styles.progressFill,
-                      width: `${(dashboardData.totalHours / dashboardData.hoursTarget) * 100}%`
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Hours Chart Placeholder */}
-              <div style={styles.chartPlaceholder}>
-                <div style={styles.chartTitle}>Hours by Month</div>
-                <div style={styles.chartBars}>
-                  {[8, 12, 15, 7, 10].map((height, index) => (
-                    <div key={index} style={styles.chartBar}>
-                      <div 
-                        style={{
-                          ...styles.chartBarFill,
-                          height: `${height * 10}px`
-                        }}
-                      ></div>
-                      <div style={styles.chartBarLabel}>
-                        {['Oct', 'Nov', 'Dec', 'Jan', 'Feb'][index]}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Hours Table */}
-              <div style={styles.tableSection}>
-                <div style={styles.tableHeader}>
-                  <h3 style={styles.tableTitle}>Recent Hours</h3>
-                  <button 
-                    style={styles.addHoursButton}
-                    onClick={() => setShowAddHoursModal(true)}
-                  >
-                    Add Hours
-                  </button>
-                </div>
-                <div style={styles.table}>
-                  <div style={styles.tableRow}>
-                    <div style={styles.tableHeaderCell}>Date</div>
-                    <div style={styles.tableHeaderCell}>Event</div>
-                    <div style={styles.tableHeaderCell}>Hours</div>
-                    <div style={styles.tableHeaderCell}>Status</div>
-                  </div>
-                  {dashboardData.recentHours.map((entry, index) => (
-                    <div key={index} style={styles.tableRow}>
-                      <div style={styles.tableCell}>{new Date(entry.date).toLocaleDateString()}</div>
-                      <div style={styles.tableCell}>{entry.event}</div>
-                      <div style={styles.tableCell}>{entry.hours}</div>
-                      <div style={{
-                        ...styles.tableCell,
-                        color: entry.status === 'Approved' ? theme.colors.success : theme.colors.warning
-                      }}>
-                        {entry.status}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Events Section */}
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Upcoming Events</h2>
-          <div style={styles.card}>
-            <div style={styles.cardContent}>
-              {dashboardData.upcomingEventList.map((event, index) => (
-                <div key={index} style={styles.eventItem}>
-                  <div style={styles.eventInfo}>
-                    <div style={styles.eventTitle}>{event.title}</div>
-                    <div style={styles.eventDate}>
-                      {new Date(event.start_date).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </div>
-                  <div style={styles.eventActions}>
-                    <span style={styles.eventStatus}>{event.status}</span>
-                    <button style={styles.viewDetailsButton}>View Details</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Achievements Section */}
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Achievements</h2>
-          <div style={styles.card}>
-            <div style={styles.cardContent}>
-              <div style={styles.achievementsGrid}>
-                {dashboardData.achievementsList.map((achievement, index) => (
-                  <div key={index} style={styles.achievementCard}>
-                    <div style={styles.achievementTitle}>{achievement.title}</div>
-                    <div style={styles.achievementDate}>
-                      {new Date(achievement.awardedDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Links Section */}
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Quick Links</h2>
-          <div style={styles.card}>
-            <div style={styles.cardContent}>
-              <div style={styles.quickLinksGrid}>
-                <button 
-                  style={styles.quickLinkButton}
-                  onClick={() => navigate('/events')}
-                >
-                  Register for New Events
-                </button>
-                <button 
-                  style={styles.quickLinkButton}
-                  onClick={() => navigate('/profile')}
-                >
-                  View Profile
-                </button>
-                <button 
-                  style={styles.quickLinkButton}
-                  onClick={() => navigate('/documents')}
-                >
-                  Upload Forms
-                </button>
-                <button 
-                  style={styles.quickLinkButton}
-                  onClick={() => {/* TODO: Export functionality */}}
-                >
-                  Download Report
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Add Hours Modal */}
-      {showAddHoursModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalTitle}>Add Volunteer Hours</h3>
-              <button 
-                style={styles.modalCloseButton}
-                onClick={() => setShowAddHoursModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            
-            <div style={styles.modalBody}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Event Name *</label>
-                <input
-                  type="text"
-                  style={styles.formInput}
-                  value={newHoursData.event_name}
-                  onChange={(e) => setNewHoursData(prev => ({ ...prev, event_name: e.target.value }))}
-                  placeholder="e.g., Food Bank Distribution"
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Hours *</label>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0"
-                  style={styles.formInput}
-                  value={newHoursData.hours}
-                  onChange={(e) => setNewHoursData(prev => ({ ...prev, hours: e.target.value }))}
-                  placeholder="e.g., 4.5"
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Date</label>
-                <input
-                  type="date"
-                  style={styles.formInput}
-                  value={newHoursData.log_date}
-                  onChange={(e) => setNewHoursData(prev => ({ ...prev, log_date: e.target.value }))}
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Description (Optional)</label>
-                <textarea
-                  style={styles.formTextarea}
-                  value={newHoursData.description}
-                  onChange={(e) => setNewHoursData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe what you did during this volunteer session..."
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            <div style={styles.modalFooter}>
-              <button 
-                style={styles.modalCancelButton}
-                onClick={() => setShowAddHoursModal(false)}
-              >
-                Cancel
-              </button>
-              <button 
-                style={styles.modalSubmitButton}
-                onClick={handleAddHours}
-              >
-                Add Hours
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}

@@ -314,8 +314,310 @@ export default function VolunteerReportModal({
   }
 
   const handleDownload = () => {
-    // This would implement PDF generation
-    console.log('Download functionality would be implemented here')
+    if (!report) return
+    
+    // Create a new window for PDF generation
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    // Generate the PDF content
+    const pdfContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Volunteer Report - ${report.volunteer.first_name} ${report.volunteer.last_name}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 3px solid #e63946;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .header h1 {
+              color: #e63946;
+              margin: 0;
+              font-size: 28px;
+            }
+            .header p {
+              margin: 5px 0 0 0;
+              color: #666;
+              font-size: 14px;
+            }
+            .section {
+              margin-bottom: 30px;
+              page-break-inside: avoid;
+            }
+            .section-title {
+              font-size: 18px;
+              font-weight: bold;
+              color: #1d3557;
+              border-bottom: 2px solid #e63946;
+              padding-bottom: 5px;
+              margin-bottom: 15px;
+            }
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 15px;
+              margin-bottom: 20px;
+            }
+            .stat-card {
+              background: #f8f9fa;
+              border: 1px solid #dee2e6;
+              border-radius: 8px;
+              padding: 15px;
+              text-align: center;
+            }
+            .stat-value {
+              font-size: 24px;
+              font-weight: bold;
+              color: #e63946;
+              margin-bottom: 5px;
+            }
+            .stat-label {
+              font-size: 12px;
+              color: #666;
+              text-transform: uppercase;
+              font-weight: bold;
+            }
+            .info-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 15px;
+            }
+            .info-field {
+              margin-bottom: 10px;
+            }
+            .info-label {
+              font-size: 12px;
+              font-weight: bold;
+              color: #666;
+              text-transform: uppercase;
+              margin-bottom: 3px;
+            }
+            .info-value {
+              font-size: 14px;
+              color: #333;
+            }
+            .table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 15px;
+            }
+            .table th {
+              background: #f8f9fa;
+              padding: 10px;
+              text-align: left;
+              font-weight: bold;
+              font-size: 12px;
+              border-bottom: 2px solid #dee2e6;
+            }
+            .table td {
+              padding: 10px;
+              border-bottom: 1px solid #dee2e6;
+              font-size: 12px;
+            }
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #dee2e6;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+            }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Volunteer Report</h1>
+            <p>${report.volunteer.first_name} ${report.volunteer.last_name}</p>
+            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}</p>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Executive Summary</div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.total_hours}</div>
+                <div class="stat-label">Total Hours</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.verified_hours}</div>
+                <div class="stat-label">Verified Hours</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.pending_hours}</div>
+                <div class="stat-label">Pending Hours</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.events_attended}</div>
+                <div class="stat-label">Events Attended</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.average_hours_per_event}</div>
+                <div class="stat-label">Avg Hours/Event</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${report.summary.days_since_last_activity}</div>
+                <div class="stat-label">Days Since Last Activity</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Volunteer Information</div>
+            <div class="info-grid">
+              <div class="info-field">
+                <div class="info-label">Name</div>
+                <div class="info-value">${report.volunteer.first_name} ${report.volunteer.last_name}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Email</div>
+                <div class="info-value">${report.volunteer.email}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Phone</div>
+                <div class="info-value">${report.volunteer.phone || 'Not provided'}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Address</div>
+                <div class="info-value">${formatAddress(report.volunteer.address)}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">T-Shirt Size</div>
+                <div class="info-value">${report.volunteer.t_shirt_size || 'Not provided'}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Emergency Contact</div>
+                <div class="info-value">${report.volunteer.emergency_contact_name || 'Not provided'}${report.volunteer.emergency_contact_phone ? ` (${report.volunteer.emergency_contact_phone})` : ''}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Activity Timeline</div>
+            <div class="info-grid">
+              <div class="info-field">
+                <div class="info-label">First Volunteer Date</div>
+                <div class="info-value">${formatDate(report.summary.first_volunteer_date)}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Last Volunteer Date</div>
+                <div class="info-value">${report.summary.last_volunteer_date === 'Never' ? 'Never volunteered' : formatDate(report.summary.last_volunteer_date)}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Member Since</div>
+                <div class="info-value">${formatDate(report.volunteer.created_at)}</div>
+              </div>
+            </div>
+          </div>
+
+          ${report.activities.recent_shifts.length > 0 ? `
+          <div class="section">
+            <div class="section-title">Recent Volunteer Activities</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Shift</th>
+                  <th>Date</th>
+                  <th>Hours</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${report.activities.recent_shifts.slice(0, 10).map(activity => `
+                  <tr>
+                    <td>${activity.shifts?.events?.title || 'N/A'}</td>
+                    <td>${activity.shifts?.title || 'N/A'}</td>
+                    <td>${formatDate(activity.created_at)}</td>
+                    <td>${activity.hours_logged || 0}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : ''}
+
+          ${report.activities.recent_achievements.length > 0 ? `
+          <div class="section">
+            <div class="section-title">Achievements</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Achievement</th>
+                  <th>Description</th>
+                  <th>Earned Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${report.activities.recent_achievements.map(achievement => `
+                  <tr>
+                    <td>${achievement.name}</td>
+                    <td>${achievement.description}</td>
+                    <td>${formatDate(achievement.earned_at)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ` : ''}
+
+          <div class="section">
+            <div class="section-title">Skills & Tags</div>
+            <div class="info-grid">
+              <div class="info-field">
+                <div class="info-label">Skills</div>
+                <div class="info-value">${report.volunteer.skills && report.volunteer.skills.length > 0 ? report.volunteer.skills.join(', ') : 'No skills listed'}</div>
+              </div>
+              <div class="info-field">
+                <div class="info-label">Tags</div>
+                <div class="info-value">${report.volunteer.tags && report.volunteer.tags.length > 0 ? report.volunteer.tags.join(', ') : 'No tags assigned'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Harry Chapin Food Bank of SWFL - Volunteer Report</p>
+            <p>Generated on ${new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}</p>
+          </div>
+        </body>
+      </html>
+    `
+
+    // Write content to the new window
+    printWindow.document.write(pdfContent)
+    printWindow.document.close()
+
+    // Wait for content to load, then trigger print dialog
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print()
+        // Close the window after printing
+        setTimeout(() => {
+          printWindow.close()
+        }, 1000)
+      }, 500)
+    }
   }
 
   if (!isOpen) return null
