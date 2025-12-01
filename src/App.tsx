@@ -1,5 +1,5 @@
-import { Routes, Route, Link } from "react-router-dom"
-import { Navbar } from "./components/shared"
+import { Routes, Route, Link } from "react-router-dom";
+import { Navbar } from "./components/shared";
 import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
 import Home from "./pages/volunteer/Home"; // your Supabase test page

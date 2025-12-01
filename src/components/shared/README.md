@@ -31,35 +31,45 @@ shared/
 All components are exported from the shared index:
 
 ```tsx
-import { Button, Card, Alert, Spinner } from '@components/shared'
+import { Button, Card, Alert, Spinner } from "@components/shared";
 ```
 
 ## Component Categories
 
 ### UI Components (`ui/`)
+
 Core interface elements for building user interfaces.
+
 - **Button**: Multiple variants (primary, secondary, outline, ghost, danger)
 - **Card**: Container with header, body, and footer sections
 - **Badge**: Status indicators with color variants
 
 ### Form Components (`form/`)
+
 Input fields and form controls with validation support.
+
 - **Input**: Text input with labels, errors, and helper text
 - **TextArea**: Multi-line text input
 - **DatePicker**: Date selection with validation
 
 ### Layout Components (`layout/`)
+
 Structural components for organizing content.
+
 - **Modal**: Dialog component with backdrop and close handling
 
 ### Feedback Components (`feedback/`)
+
 Components for providing user feedback and loading states.
+
 - **Alert**: Notification messages with variants (info, success, warning, danger)
 - **Spinner**: Loading indicators with size options
 - **Skeleton**: Loading placeholders (Card, List, Table, Dashboard, Event)
 
 ### Navigation Components (`navigation/`)
+
 Components for site navigation and date selection.
+
 - **Navbar**: Main navigation bar
 - **Calendar**: Calendar view for events and scheduling
 
@@ -75,13 +85,13 @@ Components for site navigation and date selection.
 
 ```tsx
 // Import components
-import { Button, Card, Input } from '@components/shared'
+import { Button, Card, Input } from "@components/shared";
 
 // Import with types
-import { Button, type ButtonProps } from '@components/shared'
+import { Button, type ButtonProps } from "@components/shared";
 
 // Import skeleton loaders
-import { SkeletonCard, SkeletonListItem } from '@components/shared'
+import { SkeletonCard, SkeletonListItem } from "@components/shared";
 ```
 
 ## Demo Page

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../services/supabaseClient";
-import { useAuth } from "../../hooks/useAuth"
-import { theme } from "../../constants/theme"
-import { DatePicker } from "../../components/shared"
+import { useAuth } from "../../hooks/useAuth";
+import { theme } from "../../constants/theme";
+import { DatePicker } from "../../components/shared";
 
 // Type definitions (moved inline since report.d.ts was removed)
 interface EventReport {

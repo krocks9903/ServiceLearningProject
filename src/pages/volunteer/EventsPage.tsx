@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { useAuth } from "../../hooks/useAuth";
-import { theme } from "../../constants/theme"
-import EventRegistrationModal from "../../components/scheduling/EventRegistrationModal"
-import {
-  Calendar,
-  SkeletonEventCard,
-} from "../../components/shared"
+import { theme } from "../../constants/theme";
+import EventRegistrationModal from "../../components/scheduling/EventRegistrationModal";
+import { Calendar, SkeletonEventCard } from "../../components/shared";
 
 interface Event {
   id: string;
