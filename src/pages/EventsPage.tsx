@@ -17,6 +17,23 @@ interface Event {
   volunteer_count?: number
 }
 
+interface CalendarEvent {
+  id: string
+  title: string
+  start: Date
+  end: Date
+  resource: {
+    type: string
+    id: string
+    title: string
+    start_date: string
+    end_date: string
+    location: string
+    status: string
+  }
+  color: string
+}
+
 export default function EventsPage() {
   const { user } = useAuth()
   const [events, setEvents] = useState<Event[]>([])
@@ -25,7 +42,7 @@ export default function EventsPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
-  const [calendarEvents, setCalendarEvents] = useState([])
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
   
   // Professional stock imagery
   const defaultEventImage = "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1920&q=80"
@@ -61,12 +78,18 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     try {
-      // First, get all active events
+      // Get start of today in ISO format for comparison
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayISO = today.toISOString()
+      
+      // First, get all active events that haven't ended yet
+      // Use start of day comparison so events ending today still show
       let query = supabase
         .from("events")
         .select("*")
         .eq("status", "active")
-        .gte("end_date", new Date().toISOString())
+        .gte("end_date", todayISO)
         .order("start_date", { ascending: true })
         .limit(20)
 

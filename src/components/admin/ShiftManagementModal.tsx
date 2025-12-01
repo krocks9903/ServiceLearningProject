@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { supabase } from "../../services/supabaseClient"
 import { theme } from "../../theme"
+import { convertESTToUTC, convertUTCToEST, formatTimeInEST } from "../../utils/formatDate"
 
 interface Event {
   id: string
@@ -328,14 +329,22 @@ export default function ShiftManagementModal({
     setError(null)
 
     try {
+      // Convert EST datetime strings to UTC ISO format for database storage
+      const startTimeISO = formData.start_time 
+        ? convertESTToUTC(formData.start_time)
+        : formData.start_time
+      const endTimeISO = formData.end_time
+        ? convertESTToUTC(formData.end_time)
+        : formData.end_time
+
       const { error } = await supabase
         .from("shifts")
         .insert({
           event_id: event.id,
           title: formData.title,
           description: formData.description,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          start_time: startTimeISO,
+          end_time: endTimeISO,
           capacity: formData.capacity ? parseInt(formData.capacity) : null,
           location: formData.location || event.location,
         })
@@ -371,8 +380,9 @@ export default function ShiftManagementModal({
     setFormData({
       title: shift.title,
       description: shift.description || '',
-      start_time: shift.start_time.substring(0, 16), // Format for datetime-local
-      end_time: shift.end_time.substring(0, 16),
+      // Convert UTC dates from database to EST for DatePicker
+      start_time: convertUTCToEST(shift.start_time),
+      end_time: convertUTCToEST(shift.end_time),
       capacity: shift.capacity?.toString() || '',
       location: shift.location || '',
     })
@@ -387,13 +397,21 @@ export default function ShiftManagementModal({
     try {
       if (!editingShift) return
 
+      // Convert EST datetime strings to UTC ISO format for database storage
+      const startTimeISO = formData.start_time 
+        ? convertESTToUTC(formData.start_time)
+        : formData.start_time
+      const endTimeISO = formData.end_time
+        ? convertESTToUTC(formData.end_time)
+        : formData.end_time
+
       const { error } = await supabase
         .from("shifts")
         .update({
           title: formData.title,
           description: formData.description,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
+          start_time: startTimeISO,
+          end_time: endTimeISO,
           capacity: formData.capacity ? parseInt(formData.capacity) : null,
           location: formData.location || event.location,
         })
@@ -451,11 +469,7 @@ export default function ShiftManagementModal({
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
+    return formatTimeInEST(dateString)
   }
 
   const formatDate = (dateString: string) => {

@@ -6,6 +6,7 @@ import { theme } from "../../theme"
 import ShiftManagementModal from "../../components/admin/ShiftManagementModal"
 import DatePicker from "../../components/shared/DatePicker"
 import VolunteerAssignmentsModal from "../../components/admin/VolunteerAssignmentsModal"
+import { convertESTToUTC, convertUTCToEST } from "../../utils/formatDate"
 
 interface Event {
   id: string
@@ -360,14 +361,23 @@ export default function AdminShiftsPage() {
     setLoading(true)
 
     try {
+      // Convert EST datetime strings to UTC ISO format for database storage
+      // The DatePicker returns times in EST, so we need to convert them properly
+      const startDateISO = formData.start_date 
+        ? convertESTToUTC(formData.start_date)
+        : formData.start_date
+      const endDateISO = formData.end_date
+        ? convertESTToUTC(formData.end_date)
+        : formData.end_date
+
       const { data: newEvent, error } = await supabase
         .from('events')
         .insert({
           title: formData.title,
           description: formData.description,
           location: formData.location,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
+          start_date: startDateISO,
+          end_date: endDateISO,
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
           is_private: formData.is_private,
           status: 'active'
@@ -405,8 +415,9 @@ export default function AdminShiftsPage() {
       title: event.title,
       description: event.description,
       location: event.location,
-      start_date: event.start_date.substring(0, 16), // Format for datetime-local input
-      end_date: event.end_date.substring(0, 16),
+      // Convert UTC dates from database to EST for DatePicker
+      start_date: convertUTCToEST(event.start_date),
+      end_date: convertUTCToEST(event.end_date),
       max_volunteers: event.max_volunteers?.toString() || '',
       is_private: (event as any).is_private || false,
     })
@@ -421,14 +432,23 @@ export default function AdminShiftsPage() {
     try {
       if (!editingEvent) return
 
+      // Convert EST datetime strings to UTC ISO format for database storage
+      // The DatePicker returns times in EST, so we need to convert them properly
+      const startDateISO = formData.start_date 
+        ? convertESTToUTC(formData.start_date)
+        : formData.start_date
+      const endDateISO = formData.end_date
+        ? convertESTToUTC(formData.end_date)
+        : formData.end_date
+
       const { error } = await supabase
         .from('events')
         .update({
           title: formData.title,
           description: formData.description,
           location: formData.location,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
+          start_date: startDateISO,
+          end_date: endDateISO,
           max_volunteers: formData.max_volunteers ? parseInt(formData.max_volunteers) : null,
           is_private: formData.is_private,
         })

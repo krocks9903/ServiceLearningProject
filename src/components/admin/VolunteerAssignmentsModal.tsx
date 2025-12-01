@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { supabase } from "../../services/supabaseClient"
 import { theme } from "../../theme"
+import { formatTimeInEST } from "../../utils/formatDate"
 
 interface Volunteer {
   id: string
@@ -356,11 +357,7 @@ export default function VolunteerAssignmentsModal({
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
+    return formatTimeInEST(dateString)
   }
 
   const formatDate = (dateString: string) => {
